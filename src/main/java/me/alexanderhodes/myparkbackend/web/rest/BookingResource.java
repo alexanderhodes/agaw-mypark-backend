@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
@@ -30,6 +31,14 @@ public class BookingResource {
     @PostMapping("/bookings")
     public Booking createBooking (@RequestBody Booking booking) {
         bookingService.save(booking);
+
+        return booking;
+    }
+
+    @GetMapping("/bookings/{id}")
+    public Booking getBooking (@PathVariable("id") long id) {
+        Optional<Booking> optionalBooking = bookingService.findById(id);
+        Booking booking = optionalBooking.get();
 
         return booking;
     }

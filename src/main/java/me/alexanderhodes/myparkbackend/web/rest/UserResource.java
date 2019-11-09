@@ -5,8 +5,10 @@ import me.alexanderhodes.myparkbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
@@ -21,29 +23,34 @@ public class UserResource {
         userService.findAll().forEach(user -> {
             users.add(user);
         });
-//        User[] users = new User[]{
-//                new User("alex", "password", "mail@mail.com")
-//        };
-//        return Arrays.asList(users);
         return users;
     }
 
-    @GetMapping("/user")
-    public User getUser (@RequestParam(value = "name", defaultValue = "username") String username) {
-        return new User(username, "password", "mail@mail.de", "max", "mustermann");
-    }
-
-    @GetMapping("/save")
-    public User save() {
-        User user = new User("alex", "password", "password", "john", "doe");
-        userService.save(user);
-        return user;
-    }
-
     @PostMapping("/users")
-    public User store(@RequestBody User user) {
-        System.out.println(user);
+    public User createUser(@RequestBody User user) {
+        userService.save(user);
+
         return user;
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUser(@PathParam("id") long id) {
+        Optional<User> optionalUser = userService.findById(id);
+        User user = optionalUser.get();
+
+        return user;
+    }
+
+    @PutMapping("/users/{id}")
+    public User updateUser(@RequestBody User user, @PathParam("id") long id) {
+        userService.save(user);
+
+        return user;
+    }
+
+    @DeleteMapping("/users/{id}")
+    public void deleteUser(@PathParam("id") long id) {
+        userService.deleteById(id);
     }
 
 }
