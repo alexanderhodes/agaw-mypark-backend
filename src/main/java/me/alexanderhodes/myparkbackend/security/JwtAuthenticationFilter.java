@@ -64,10 +64,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .compact();
 
         try {
+            long expirationInMillis = expiration.getTime();
             // Header content-type setzen
             response.addHeader("Content-Type", "application/json");
 
-            String body = String.format("{ \"token\": \"%s\" }", token);
+            String body = String.format("{ \"token\": \"%s\", \"expiration\": \"%d\" }", token, expirationInMillis);
             response.getWriter().write(body);
             response.getWriter().flush();
             response.getWriter().close();
