@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,19 +50,30 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         byte[] signingKey = SecurityConstants.JWT_SECRET.getBytes();
 
+        // drei Stunden
+        Date expiration = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 3);
+
         String token = Jwts.builder()
                 .signWith(Keys.hmacShaKeyFor(signingKey), SignatureAlgorithm.HS512)
                 .setHeaderParam("typ", SecurityConstants.TOKEN_TYPE)
                 .setIssuer(SecurityConstants.TOKEN_ISSUER)
                 .setAudience(SecurityConstants.TOKEN_AUDIENCE)
                 .setSubject(user.getUsername())
-                // drei Stunden
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 3))
-//                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60))
+                .setExpiration(expiration)
                 .claim("rol", roles)
                 .compact();
 
-        response.addHeader(SecurityConstants.TOKEN_HEADER, SecurityConstants.TOKEN_PREFIX + token);
+        try {
+            // Header content-type setzen
+            response.addHeader("Content-Type", "application/json");
+
+            String body = String.format("{ \"token\": \"%s\" }", token);
+            response.getWriter().write(body);
+            response.getWriter().flush();
+            response.getWriter().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
