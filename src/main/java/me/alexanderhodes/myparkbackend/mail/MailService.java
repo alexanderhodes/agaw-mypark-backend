@@ -7,9 +7,11 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class MailService {
 
     private String apiKey;
