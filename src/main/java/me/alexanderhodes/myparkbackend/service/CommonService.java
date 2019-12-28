@@ -1,10 +1,13 @@
 package me.alexanderhodes.myparkbackend.service;
 
+import com.sendgrid.helpers.mail.objects.Email;
+import me.alexanderhodes.myparkbackend.helper.FileImport;
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.mail.MailService;
 import me.alexanderhodes.myparkbackend.model.Role;
 import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.model.UserRole;
+import me.alexanderhodes.myparkbackend.translations.EmailTranslations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +31,10 @@ public class CommonService {
     private MailService mailService;
     @Autowired
     private UuidGenerator uuidGenerator;
+    @Autowired
+    private FileImport fileImport;
+    @Autowired
+    private EmailTranslations emailTranslations;
 
     public User requestPasswordReset (String email) {
         // 1. Prüfen, ob Benutzer existiert
@@ -43,7 +50,14 @@ public class CommonService {
             }
             // 3. E-Mail senden
             try {
-                mailService.send("test@email.com", email, "Password reset", "Hello World!");
+                String htmlBody = fileImport.getText("email-template.html");
+                String content = emailTranslations.getContent(EmailTranslations.RESET_PASSWORD);
+                String headline = emailTranslations.getHeadline(EmailTranslations.RESET_PASSWORD);
+                String subject = emailTranslations.getSubject(EmailTranslations.RESET_PASSWORD);
+                htmlBody = htmlBody.replace("PLACEHOLDER_USERNAME", user.getUsername())
+                                    .replace("PLACEHOLDER_HEADLINE", headline)
+                                    .replace("PLACEHOLDER_CONTENT", content);
+                mailService.send("test@email.com", "alexander.hodes@live.com", subject, htmlBody);
             } catch (IOException e) {
                 e.printStackTrace();
             }

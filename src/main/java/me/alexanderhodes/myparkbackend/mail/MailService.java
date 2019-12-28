@@ -21,13 +21,9 @@ public class MailService {
     }
 
     public void send (String sender, String receiver, String subject, String text) throws IOException {
-
         Mail mail = this.createConfiguration(sender, receiver, subject, text);
-
         SendGrid sendGrid = new SendGrid(this.apiKey);
-
         Request request = this.createRequest(mail);
-
         Response response = sendGrid.api(request);
 
         this.handleResponse(response);
