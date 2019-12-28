@@ -1,8 +1,10 @@
 package me.alexanderhodes.myparkbackend.security;
 
+import com.google.gson.GsonBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import me.alexanderhodes.myparkbackend.security.model.Auth;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,8 +32,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
+        String username = "";
+        String password = "";
+
+        try {
+            String formData = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+
+            String[] formDataArray = formData.split(System.lineSeparator());
+
+            username = formDataArray[3];
+            password = formDataArray[7];
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
+
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(username, password);
 
@@ -68,13 +84,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             // Header content-type setzen
             response.addHeader("Content-Type", "application/json");
 
-            String body = String.format("{ \"token\": \"%s\", \"expiration\": \"%d\" }", token, expirationInMillis);
+            String body = createResponseBody(user.getUsername(), token, expirationInMillis, roles);
+
             response.getWriter().write(body);
             response.getWriter().flush();
             response.getWriter().close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String createResponseBody(String username, String token, long expirationInMillis, List<String> roles) {
+        Auth authentication = new Auth(token, expirationInMillis, roles, username);
+
+        String body = new GsonBuilder().create().toJson(authentication);
+
+        return body;
     }
 }
 

@@ -18,7 +18,7 @@ public class PasswordResetService {
 
     public User requestPasswordReset (String email) {
         // 1. Prüfen, ob Benutzer existiert
-        User user = userService.findByEmail(email);
+        User user = userService.findByUsername(email);
         // 2. Token generieren und in DB speichern
         System.out.println(user);
         // 3. E-Mail senden
