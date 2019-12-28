@@ -1,18 +1,16 @@
 package me.alexanderhodes.myparkbackend.model;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
 public class UserRoleId implements Serializable {
 
-    private User user;
-    private Role role;
+    private String user;
+    private String role;
 
     public UserRoleId() {}
 
-    public UserRoleId(User user, Role role) {
+    public UserRoleId(String user, String role) {
         this.user = user;
         this.role = role;
     }

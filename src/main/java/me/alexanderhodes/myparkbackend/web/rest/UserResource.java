@@ -21,7 +21,7 @@ public class UserResource {
     public List<User> getUsers () {
         List<User> users = new ArrayList<>();
         userService.findAll().forEach(user -> {
-            users.add(user);
+            users.add(user.toJson());
         });
         return users;
     }
@@ -30,7 +30,7 @@ public class UserResource {
     public User createUser(@RequestBody User user) {
         userService.save(user);
 
-        return user;
+        return user.toJson();
     }
 
     @GetMapping("/users/{id}")
@@ -38,14 +38,14 @@ public class UserResource {
         Optional<User> optionalUser = userService.findById(id);
         User user = optionalUser.get();
 
-        return user;
+        return user.toJson();
     }
 
     @PutMapping("/users/{id}")
     public User updateUser(@RequestBody User user, @PathParam("id") long id) {
         userService.save(user);
 
-        return user;
+        return user.toJson();
     }
 
     @DeleteMapping("/users/{id}")

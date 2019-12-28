@@ -1,5 +1,6 @@
 package me.alexanderhodes.myparkbackend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,5 +34,9 @@ public class User extends CommonEntity implements Serializable {
         this.firstName = firstName;
         this.lastName = lastName;
         this.enabled = enabled;
+    }
+
+    public User toJson() {
+        return new User(this.name, null, this.username, this.firstName, this.lastName, this.enabled);
     }
 }

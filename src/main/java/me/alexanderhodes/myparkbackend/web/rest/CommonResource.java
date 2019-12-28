@@ -1,7 +1,7 @@
 package me.alexanderhodes.myparkbackend.web.rest;
 
 import me.alexanderhodes.myparkbackend.model.User;
-import me.alexanderhodes.myparkbackend.service.PasswordResetService;
+import me.alexanderhodes.myparkbackend.service.CommonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api")
-public class UnauthorizedResource {
+public class CommonResource {
 
     @Autowired
-    private PasswordResetService passwordResetService;
+    private CommonService commonService;
 
     @GetMapping("/common/password/request/")
     public ResponseEntity<User> requestPasswordReset(@RequestParam(value = "email") String email) {
-        User user = passwordResetService.requestPasswordReset(email);
+        User user = commonService.requestPasswordReset(email);
 
         return (user == null) ? new ResponseEntity(null, HttpStatus.NOT_FOUND) :
                 new ResponseEntity(user, HttpStatus.OK);
@@ -28,5 +28,12 @@ public class UnauthorizedResource {
         System.out.println("token " + token);
     }
 
+    @PostMapping("/common/register")
+    public ResponseEntity<User> register(@RequestBody User body) {
+        User user = this.commonService.createUser(body);
+
+        return (user == null) ? new ResponseEntity(null, HttpStatus.BAD_REQUEST) :
+                new ResponseEntity(user.toJson(), HttpStatus.CREATED);
+    }
 
 }
