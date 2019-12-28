@@ -1,7 +1,10 @@
 package me.alexanderhodes.myparkbackend.web.rest;
 
+import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.Booking;
+import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.service.BookingService;
+import me.alexanderhodes.myparkbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,10 @@ public class BookingResource {
 
     @Autowired
     private BookingService bookingService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private UuidGenerator uuidGenerator;
 
     @GetMapping("/bookings")
     public List<Booking> getBookings () {
@@ -24,6 +31,19 @@ public class BookingResource {
         bookingService.findAll().forEach(booking -> {
             bookings.add(booking);
         });
+
+        return bookings;
+    }
+
+    @GetMapping("/bookings/users/{user}")
+    public List<Booking> getBookingsForUser (@PathVariable("user") String username) {
+        List<Booking> bookings = new ArrayList<>();
+
+        User user = userService.findByUsername(username);
+        if (user != null) {
+            List<Booking> foundBookings = bookingService.findByUser(user);
+            bookings.addAll(foundBookings);
+        }
 
         return bookings;
     }

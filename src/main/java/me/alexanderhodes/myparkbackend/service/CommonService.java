@@ -1,5 +1,6 @@
 package me.alexanderhodes.myparkbackend.service;
 
+import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.mail.MailService;
 import me.alexanderhodes.myparkbackend.model.Role;
 import me.alexanderhodes.myparkbackend.model.User;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
 @Component
@@ -24,20 +26,31 @@ public class CommonService {
     private RoleService roleService;
     @Autowired
     private MailService mailService;
+    @Autowired
+    private UuidGenerator uuidGenerator;
 
     public User requestPasswordReset (String email) {
         // 1. Prüfen, ob Benutzer existiert
         User user = userService.findByUsername(email);
-        // 2. Token generieren und in DB speichern
-        System.out.println(user);
-        // 3. E-Mail senden
-        try {
-            mailService.send("test@email.com", email, "Password reset", "Hello World!");
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        if (user != null) {
+            // 2. Token generieren und in DB speichern
+            String token = "";
+            try {
+                token = uuidGenerator.newBase64Token(email);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            // 3. E-Mail senden
+            try {
+                mailService.send("test@email.com", email, "Password reset", "Hello World!");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return user.toJson();
         }
 
-        return user;
+        return null;
     }
 
     public User createUser (User body) {

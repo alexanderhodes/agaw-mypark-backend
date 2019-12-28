@@ -1,5 +1,6 @@
 package me.alexanderhodes.myparkbackend.web.rest;
 
+import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.service.CommonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ public class CommonResource {
 
     @Autowired
     private CommonService commonService;
+    @Autowired
+    private UuidGenerator uuidGenerator;
 
     @GetMapping("/common/password/request/")
     public ResponseEntity<User> requestPasswordReset(@RequestParam(value = "email") String email) {
@@ -30,6 +33,9 @@ public class CommonResource {
 
     @PostMapping("/common/register")
     public ResponseEntity<User> register(@RequestBody User body) {
+        String uuid = uuidGenerator.newId();
+        body.setId(uuid);
+
         User user = this.commonService.createUser(body);
 
         return (user == null) ? new ResponseEntity(null, HttpStatus.BAD_REQUEST) :

@@ -1,6 +1,7 @@
 package me.alexanderhodes.myparkbackend.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -10,11 +11,11 @@ import java.io.Serializable;
 @Table(name = "mp_parkingspace")
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"id", "number"})
 public class ParkingSpace extends CommonEntity implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private String id;
     @Column(name = "number")
     private String number;
     @ManyToOne(optional = false)

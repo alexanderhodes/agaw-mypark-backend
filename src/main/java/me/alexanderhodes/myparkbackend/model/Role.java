@@ -1,6 +1,7 @@
 package me.alexanderhodes.myparkbackend.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 @Table(name = "mp_role")
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"name"})
 public class Role implements Serializable {
 
     @Id

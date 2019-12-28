@@ -1,9 +1,6 @@
 package me.alexanderhodes.myparkbackend.model;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,11 +10,11 @@ import java.util.Date;
 @Table(name = "mp_booking")
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class Booking extends CommonEntity implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private String id;
     @ManyToOne(optional = false)
     @JoinColumn(name = "f_user")
     private User user;

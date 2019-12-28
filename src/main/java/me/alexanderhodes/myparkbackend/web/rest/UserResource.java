@@ -1,5 +1,6 @@
 package me.alexanderhodes.myparkbackend.web.rest;
 
+import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ public class UserResource {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private UuidGenerator uuidGenerator;
 
     @GetMapping("/users")
     public List<User> getUsers () {
@@ -28,6 +31,9 @@ public class UserResource {
 
     @PostMapping("/users")
     public User createUser(@RequestBody User user) {
+        String uuid = uuidGenerator.newId();
+        user.setId(uuid);
+
         userService.save(user);
 
         return user.toJson();
