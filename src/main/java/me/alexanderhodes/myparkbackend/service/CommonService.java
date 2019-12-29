@@ -57,7 +57,7 @@ public class CommonService {
                 htmlBody = htmlBody.replace("PLACEHOLDER_USERNAME", user.getUsername())
                                     .replace("PLACEHOLDER_HEADLINE", headline)
                                     .replace("PLACEHOLDER_CONTENT", content);
-                mailService.send("test@email.com", "alexander.hodes@live.com", subject, htmlBody);
+                mailService.send("alexander.hodes@live.com", subject, htmlBody);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -83,7 +83,7 @@ public class CommonService {
             userRoleService.save(userRole);
             // send registration mail
             try {
-                mailService.send("test@email.com", "alexander.hodes@live.com", "Registration", "Hi, you're registered!");
+                mailService.send("alexander.hodes@live.com", "Registration", "Hi, you're registered!");
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -20,7 +20,13 @@ public class MailService {
         this.apiKey = System.getenv().get("AGWA_MYPARK_SENDGRID_API");
     }
 
-    public void send (String sender, String receiver, String subject, String text) throws IOException {
+    public void send (String receiver, String subject, String text) throws IOException {
+        String sender = "hello@agwa-mypark.herokuapp.com";
+
+        this.send(sender, receiver, subject, text);
+    }
+
+    private void send (String sender, String receiver, String subject, String text) throws IOException {
         Mail mail = this.createConfiguration(sender, receiver, subject, text);
         SendGrid sendGrid = new SendGrid(this.apiKey);
         Request request = this.createRequest(mail);
