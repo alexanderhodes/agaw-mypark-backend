@@ -26,4 +26,22 @@ public class UuidGenerator {
         return encoded;
     }
 
+    public String getUsernameFromBase64Token(String token) {
+        return decodeBase64Token(token, 1);
+    }
+
+    public String getIdFromBase64Token(String token) {
+        return decodeBase64Token(token, 0);
+    }
+
+    private String decodeBase64Token(String token, int index) {
+        byte[] bytes = Base64.getDecoder().decode(token);
+
+        String text = new String(bytes);
+
+        String[] array = text.split(":");
+
+        return index > array.length ? null : array[index];
+    }
+
 }

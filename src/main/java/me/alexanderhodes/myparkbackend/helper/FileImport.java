@@ -1,10 +1,8 @@
 package me.alexanderhodes.myparkbackend.helper;
 
-import org.apache.catalina.connector.InputBuffer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 
 import java.io.*;
 import java.util.stream.Collectors;

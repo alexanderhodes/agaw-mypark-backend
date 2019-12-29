@@ -1,21 +1,21 @@
 package me.alexanderhodes.myparkbackend.service;
 
-import com.sendgrid.helpers.mail.objects.Email;
 import me.alexanderhodes.myparkbackend.helper.FileImport;
+import me.alexanderhodes.myparkbackend.helper.FormDataHandler;
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.mail.MailService;
 import me.alexanderhodes.myparkbackend.model.Role;
+import me.alexanderhodes.myparkbackend.model.Token;
 import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.model.UserRole;
 import me.alexanderhodes.myparkbackend.translations.EmailTranslations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Component
@@ -35,6 +35,10 @@ public class CommonService {
     private FileImport fileImport;
     @Autowired
     private EmailTranslations emailTranslations;
+    @Autowired
+    private TokenService tokenService;
+    @Autowired
+    private FormDataHandler formDataHandler;
 
     public User requestPasswordReset (String email) {
         // 1. Prüfen, ob Benutzer existiert
@@ -42,9 +46,18 @@ public class CommonService {
 
         if (user != null) {
             // 2. Token generieren und in DB speichern
-            String token = "";
+            String base64token = "";
             try {
-                token = uuidGenerator.newBase64Token(email);
+                base64token = uuidGenerator.newBase64Token(email);
+                System.out.println("token: " + base64token);
+
+                LocalDateTime localDateTime = LocalDateTime.now();
+                localDateTime = localDateTime.plusDays(1);
+
+                String uuid = uuidGenerator.getIdFromBase64Token(base64token);
+
+                Token token = new Token(uuid, user, localDateTime);
+                tokenService.save(token);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -65,6 +78,29 @@ public class CommonService {
         }
 
         return null;
+    }
+
+    public boolean validateToken (String base64Token) {
+        String id = uuidGenerator.getIdFromBase64Token(base64Token);
+        Optional<Token> optional = tokenService.findById(id);
+
+        return optional.isPresent();
+    }
+
+    public boolean storePassword (String base64Token, String formData) {
+        String username = uuidGenerator.getUsernameFromBase64Token(base64Token);
+        User user = userService.findByUsername(username);
+
+        if (user != null) {
+            String password = formDataHandler.extract(formData, 3);
+            String passwordEncoded = new BCryptPasswordEncoder().encode(password);
+            user.setPassword(passwordEncoded);
+
+            userService.save(user);
+
+            return true;
+        }
+        return false;
     }
 
     public User createUser (User body) {

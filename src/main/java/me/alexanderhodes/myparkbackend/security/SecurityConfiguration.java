@@ -32,7 +32,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/public",
                         "/api/common/password/request/*",
                         "/api/common/password/reset/*",
-                        "/api/common/register/").permitAll()
+                        "/api/common/register/",
+                        "/api/common/password/validation/*").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JwtAuthenticationFilter(authenticationManager()))

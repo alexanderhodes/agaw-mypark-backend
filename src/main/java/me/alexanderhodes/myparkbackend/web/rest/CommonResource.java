@@ -25,10 +25,27 @@ public class CommonResource {
                 new ResponseEntity(user, HttpStatus.OK);
     }
 
-    @GetMapping("/common/password/reset/{token}")
-    public void setPassword(@PathVariable("token") String token) {
-        // prüfen, ob alles existiert und Eingaben stimmen
-        System.out.println("token " + token);
+    @GetMapping("/common/password/validation/{token}")
+    public ResponseEntity validateToken(@PathVariable("token") String base64Token) {
+        boolean exists = commonService.validateToken(base64Token);
+
+        return exists ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/common/password/reset/{token}")
+    public ResponseEntity<Object> setPassword(@PathVariable("token") String base64Token,
+                                              @RequestBody String body) {
+        boolean exists = commonService.validateToken(base64Token);
+
+        if (exists) {
+            // ToDo: extract from right position
+            String password = body.replace("password=", "");
+
+            return commonService.storePassword(base64Token, password) ? ResponseEntity.ok().build() :
+                    ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.badRequest().build();
     }
 
     @PostMapping("/common/register")

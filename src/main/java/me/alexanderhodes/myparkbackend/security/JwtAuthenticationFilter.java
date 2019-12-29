@@ -97,9 +97,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private String createResponseBody(String username, String token, long expirationInMillis, List<String> roles) {
         Auth authentication = new Auth(token, expirationInMillis, roles, username);
 
-        String body = new GsonBuilder().create().toJson(authentication);
-
-        return body;
+        return new GsonBuilder().create().toJson(authentication);
     }
 }
 
