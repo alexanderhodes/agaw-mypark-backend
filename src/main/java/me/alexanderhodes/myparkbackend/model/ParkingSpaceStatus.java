@@ -14,6 +14,9 @@ import java.io.Serializable;
 @EqualsAndHashCode(of = {"id", "name"})
 public class ParkingSpaceStatus extends CommonEntity implements Serializable {
 
+    public static final String FREE = "free";
+    public static final String USED = "used";
+
     @Id
     private String id;
     @Column(name = "name")
