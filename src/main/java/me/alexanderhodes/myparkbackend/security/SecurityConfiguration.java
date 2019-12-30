@@ -33,7 +33,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                         "/api/common/password/request/*",
                         "/api/common/password/reset/*",
                         "/api/common/register/",
-                        "/api/common/password/validation/*").permitAll()
+                        "/api/common/password/validation/*",
+                        "/api/common/register/validation/*").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JwtAuthenticationFilter(authenticationManager()))

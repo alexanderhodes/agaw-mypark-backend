@@ -35,13 +35,18 @@ public class UuidGenerator {
     }
 
     private String decodeBase64Token(String token, int index) {
-        byte[] bytes = Base64.getDecoder().decode(token);
+        try {
+            byte[] bytes = Base64.getDecoder().decode(token);
 
-        String text = new String(bytes);
+            String text = new String(bytes);
 
-        String[] array = text.split(":");
+            String[] array = text.split(":");
 
-        return index > array.length ? null : array[index];
+            return index > array.length ? null : array[index];
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

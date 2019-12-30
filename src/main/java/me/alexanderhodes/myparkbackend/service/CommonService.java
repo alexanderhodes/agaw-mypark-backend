@@ -53,33 +53,10 @@ public class CommonService {
 
         if (user != null) {
             // 2. Token generieren und in DB speichern
-            String base64token = "";
-            try {
-                base64token = uuidGenerator.newBase64Token(email);
-                LocalDateTime localDateTime = LocalDateTime.now();
-                localDateTime = localDateTime.plusDays(1);
-
-                String uuid = uuidGenerator.getIdFromBase64Token(base64token);
-                Token token = new Token(uuid, user, localDateTime);
-                tokenService.save(token);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+            String base64token = createToken(email, user, Token.PASSWORD_RESET);
             // 3. E-Mail senden
-            try {
-                String placeholderLink = this.urlHelper.getPasswordResetUrl(base64token);
-                List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
-                placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_USERNAME", user.getUsername()));
-                placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_LINKTOKEN", placeholderLink));
+            sendMailWithToken(user, base64token);
 
-                MMail mmail = mailHelper.createMail("alexander.hodes@live.com", EmailTranslations.RESET_PASSWORD,
-                        placeholders);
-                if (sendMail) {
-                    mailService.send(mmail);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             return user.toJson();
         }
 
@@ -124,16 +101,50 @@ public class CommonService {
             UserRole userRole = new UserRole(user, role.get());
             userRoleService.save(userRole);
             // send registration mail
-            try {
-                mailService.send("alexander.hodes@live.com", "Registration", "Hi, you're registered!");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            // 2. Token generieren und in DB speichern
+            String base64token = createToken(user.getUsername(), user, Token.REGISTRATION);
+            System.out.println("registration-token: " + base64token);
+            // 3. E-Mail senden
+            sendMailWithToken(user, base64token);
 
             return user;
         }
 
         return null;
     }
+
+    private String createToken(String email, User user, String tokenType) {
+        String base64token = "";
+        try {
+            base64token = uuidGenerator.newBase64Token(email);
+            LocalDateTime localDateTime = LocalDateTime.now();
+            localDateTime = localDateTime.plusDays(1);
+
+            String uuid = uuidGenerator.getIdFromBase64Token(base64token);
+            Token token = new Token(uuid, user, localDateTime, tokenType);
+            tokenService.save(token);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return base64token;
+    }
+
+    private void sendMailWithToken(User user, String base64token) {
+        try {
+            String placeholderLink = this.urlHelper.getPasswordResetUrl(base64token);
+            List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
+            placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_USERNAME", user.getUsername()));
+            placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_LINKTOKEN", placeholderLink));
+
+            MMail mmail = mailHelper.createMail("alexander.hodes@live.com", EmailTranslations.RESET_PASSWORD,
+                    placeholders);
+            if (sendMail) {
+                mailService.send(mmail);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

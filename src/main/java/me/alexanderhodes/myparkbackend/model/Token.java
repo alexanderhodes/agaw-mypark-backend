@@ -15,16 +15,22 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(of = {"id"})
 public class Token implements Serializable {
 
+    public static final String PASSWORD_RESET = "password_reset";
+    public static final String REGISTRATION = "registration";
+
     @Id
     private String id;
     @ManyToOne(optional = false)
     @JoinColumn(name = "f_user")
     private User user;
     private LocalDateTime validUntil;
+    @Column(name = "category")
+    private String category;
 
-    public Token(String id, User user, LocalDateTime validUntil) {
+    public Token(String id, User user, LocalDateTime validUntil, String category) {
         this.id = id;
         this.user = user;
         this.validUntil = validUntil;
+        this.category = category;
     }
 }

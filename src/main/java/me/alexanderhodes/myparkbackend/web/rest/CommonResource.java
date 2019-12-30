@@ -26,7 +26,7 @@ public class CommonResource {
     }
 
     @GetMapping("/common/password/validation/{token}")
-    public ResponseEntity<User> validateToken(@PathVariable("token") String base64Token) {
+    public ResponseEntity<User> validatePasswordResetToken(@PathVariable("token") String base64Token) {
         User user = commonService.validateToken(base64Token);
 
         return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
@@ -57,6 +57,20 @@ public class CommonResource {
 
         return (user == null) ? new ResponseEntity(null, HttpStatus.BAD_REQUEST) :
                 new ResponseEntity(user.toJson(), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/common/register/validation/{token}")
+    public ResponseEntity validateRegisterToken(@PathVariable("token") String base64Token) {
+        User user = this.commonService.validateToken(base64Token);
+
+        if (user != null) {
+            // ToDo: enable user
+            // ToDo: delete Token
+
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
 }
