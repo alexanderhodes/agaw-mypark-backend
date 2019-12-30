@@ -103,7 +103,6 @@ public class CommonService {
             // send registration mail
             // 2. Token generieren und in DB speichern
             String base64token = createToken(user.getUsername(), user, Token.REGISTRATION);
-            System.out.println("registration-token: " + base64token);
             // 3. E-Mail senden
             sendMailWithToken(user, base64token);
 
