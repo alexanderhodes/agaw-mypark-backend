@@ -113,6 +113,17 @@ public class CommonService {
         return null;
     }
 
+    public void activateUser (User user) {
+        user.setEnabled(true);
+        this.userService.save(user);
+    }
+
+    public void deleteToken (String base64Token) {
+        String id = uuidGenerator.getIdFromBase64Token(base64Token);
+
+        this.tokenService.deleteById(id);
+    }
+
     private String createToken(String email, User user, String tokenType) {
         String base64token = "";
         try {
@@ -145,6 +156,5 @@ public class CommonService {
             e.printStackTrace();
         }
     }
-
 
 }

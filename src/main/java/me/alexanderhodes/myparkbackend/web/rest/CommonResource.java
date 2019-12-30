@@ -33,15 +33,11 @@ public class CommonResource {
     }
 
     @PostMapping("/common/password/reset/{token}")
-    public ResponseEntity<Object> setPassword(@PathVariable("token") String base64Token,
-                                              @RequestBody String body) {
+    public ResponseEntity<Object> setPassword(@PathVariable("token") String base64Token, @RequestBody String body) {
         User user = commonService.validateToken(base64Token);
 
         if (user != null) {
-            // ToDo: extract from right position
-            String password = body.replace("password=", "");
-
-            return commonService.storePassword(base64Token, password) ? ResponseEntity.ok().build() :
+            return commonService.storePassword(base64Token, body) ? ResponseEntity.ok().build() :
                     ResponseEntity.badRequest().build();
         }
 
@@ -64,8 +60,10 @@ public class CommonResource {
         User user = this.commonService.validateToken(base64Token);
 
         if (user != null) {
-            // ToDo: enable user
-            // ToDo: delete Token
+            // activate user
+            this.commonService.activateUser(user);
+            // remove token
+            this.commonService.deleteToken(base64Token);
 
             return ResponseEntity.ok().build();
         }
