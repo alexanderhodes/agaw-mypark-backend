@@ -1,9 +1,11 @@
 package me.alexanderhodes.myparkbackend.service;
 
-import me.alexanderhodes.myparkbackend.helper.FileImport;
 import me.alexanderhodes.myparkbackend.helper.FormDataHandler;
+import me.alexanderhodes.myparkbackend.helper.UrlHelper;
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
+import me.alexanderhodes.myparkbackend.mail.MailHelper;
 import me.alexanderhodes.myparkbackend.mail.MailService;
+import me.alexanderhodes.myparkbackend.mail.model.MMail;
 import me.alexanderhodes.myparkbackend.model.Role;
 import me.alexanderhodes.myparkbackend.model.Token;
 import me.alexanderhodes.myparkbackend.model.User;
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class CommonService {
@@ -33,17 +35,17 @@ public class CommonService {
     @Autowired
     private UuidGenerator uuidGenerator;
     @Autowired
-    private FileImport fileImport;
-    @Autowired
-    private EmailTranslations emailTranslations;
-    @Autowired
     private TokenService tokenService;
     @Autowired
     private FormDataHandler formDataHandler;
-    @Value("${mypark.frontend.url}")
-    private String frontendUrl;
+    @Autowired
+    private UrlHelper urlHelper;
+    @Autowired
+    private MailHelper mailHelper;
     @Value("${mypark.production}")
     private boolean production;
+    @Value("${mypark.sendmail}")
+    private boolean sendMail;
 
     public User requestPasswordReset (String email) {
         // 1. Prüfen, ob Benutzer existiert
@@ -54,7 +56,6 @@ public class CommonService {
             String base64token = "";
             try {
                 base64token = uuidGenerator.newBase64Token(email);
-
                 LocalDateTime localDateTime = LocalDateTime.now();
                 localDateTime = localDateTime.plusDays(1);
 
@@ -66,15 +67,16 @@ public class CommonService {
             }
             // 3. E-Mail senden
             try {
-                String htmlBody = fileImport.getText("email-template.html");
-                String content = emailTranslations.getContent(EmailTranslations.RESET_PASSWORD);
-                String headline = emailTranslations.getHeadline(EmailTranslations.RESET_PASSWORD);
-                String subject = emailTranslations.getSubject(EmailTranslations.RESET_PASSWORD);
-                htmlBody = htmlBody.replace("PLACEHOLDER_USERNAME", user.getUsername())
-                                    .replace("PLACEHOLDER_HEADLINE", headline)
-                                    .replace("PLACEHOLDER_CONTENT", content)
-                                    .replace("PLACEHOLDER_LINKTOKEN", frontendUrl);
-                mailService.send("alexander.hodes@live.com", subject, htmlBody);
+                String placeholderLink = this.urlHelper.getPasswordResetUrl(base64token);
+                List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
+                placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_USERNAME", user.getUsername()));
+                placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_LINKTOKEN", placeholderLink));
+
+                MMail mmail = mailHelper.createMail("alexander.hodes@live.com", EmailTranslations.RESET_PASSWORD,
+                        placeholders);
+                if (sendMail) {
+                    mailService.send(mmail);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -84,11 +86,11 @@ public class CommonService {
         return null;
     }
 
-    public boolean validateToken (String base64Token) {
+    public User validateToken (String base64Token) {
         String id = uuidGenerator.getIdFromBase64Token(base64Token);
         Optional<Token> optional = tokenService.findById(id);
 
-        return optional.isPresent();
+        return optional.isPresent() ? optional.get().getUser().toJson() : null;
     }
 
     public boolean storePassword (String base64Token, String formData) {

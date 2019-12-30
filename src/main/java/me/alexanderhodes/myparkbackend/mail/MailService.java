@@ -7,6 +7,7 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import me.alexanderhodes.myparkbackend.mail.model.MMail;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -14,16 +15,19 @@ import java.io.IOException;
 @Component
 public class MailService {
 
+    private static final String SENDER = "hello@agwa-mypark.herokuapp.com";
     private String apiKey;
 
     public MailService() {
         this.apiKey = System.getenv().get("AGWA_MYPARK_SENDGRID_API");
     }
 
-    public void send (String receiver, String subject, String text) throws IOException {
-        String sender = "hello@agwa-mypark.herokuapp.com";
+    public void send (MMail mmail) throws IOException {
+        this.send(SENDER, mmail.getReceiver(), mmail.getSubject(), mmail.getContent());
+    }
 
-        this.send(sender, receiver, subject, text);
+    public void send (String receiver, String subject, String text) throws IOException {
+        this.send(SENDER, receiver, subject, text);
     }
 
     private void send (String sender, String receiver, String subject, String text) throws IOException {

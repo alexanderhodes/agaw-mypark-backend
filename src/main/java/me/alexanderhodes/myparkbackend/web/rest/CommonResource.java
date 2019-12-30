@@ -26,18 +26,18 @@ public class CommonResource {
     }
 
     @GetMapping("/common/password/validation/{token}")
-    public ResponseEntity validateToken(@PathVariable("token") String base64Token) {
-        boolean exists = commonService.validateToken(base64Token);
+    public ResponseEntity<User> validateToken(@PathVariable("token") String base64Token) {
+        User user = commonService.validateToken(base64Token);
 
-        return exists ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/common/password/reset/{token}")
     public ResponseEntity<Object> setPassword(@PathVariable("token") String base64Token,
                                               @RequestBody String body) {
-        boolean exists = commonService.validateToken(base64Token);
+        User user = commonService.validateToken(base64Token);
 
-        if (exists) {
+        if (user != null) {
             // ToDo: extract from right position
             String password = body.replace("password=", "");
 
