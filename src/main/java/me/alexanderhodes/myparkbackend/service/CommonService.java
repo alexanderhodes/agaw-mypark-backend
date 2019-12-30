@@ -10,6 +10,7 @@ import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.model.UserRole;
 import me.alexanderhodes.myparkbackend.translations.EmailTranslations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,10 @@ public class CommonService {
     private TokenService tokenService;
     @Autowired
     private FormDataHandler formDataHandler;
+    @Value("${mypark.frontend.url}")
+    private String frontendUrl;
+    @Value("${mypark.production}")
+    private boolean production;
 
     public User requestPasswordReset (String email) {
         // 1. Prüfen, ob Benutzer existiert
@@ -49,13 +54,11 @@ public class CommonService {
             String base64token = "";
             try {
                 base64token = uuidGenerator.newBase64Token(email);
-                System.out.println("token: " + base64token);
 
                 LocalDateTime localDateTime = LocalDateTime.now();
                 localDateTime = localDateTime.plusDays(1);
 
                 String uuid = uuidGenerator.getIdFromBase64Token(base64token);
-
                 Token token = new Token(uuid, user, localDateTime);
                 tokenService.save(token);
             } catch (UnsupportedEncodingException e) {
@@ -69,7 +72,8 @@ public class CommonService {
                 String subject = emailTranslations.getSubject(EmailTranslations.RESET_PASSWORD);
                 htmlBody = htmlBody.replace("PLACEHOLDER_USERNAME", user.getUsername())
                                     .replace("PLACEHOLDER_HEADLINE", headline)
-                                    .replace("PLACEHOLDER_CONTENT", content);
+                                    .replace("PLACEHOLDER_CONTENT", content)
+                                    .replace("PLACEHOLDER_LINKTOKEN", frontendUrl);
                 mailService.send("alexander.hodes@live.com", subject, htmlBody);
             } catch (IOException e) {
                 e.printStackTrace();
