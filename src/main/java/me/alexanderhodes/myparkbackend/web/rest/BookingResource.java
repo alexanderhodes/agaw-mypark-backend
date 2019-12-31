@@ -44,7 +44,7 @@ public class BookingResource {
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/bookings/users/")
+    @GetMapping("/bookings/users")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<List<Booking>> getBookingsForUser () {
         String username = this.authenticationService.getCurrentUsername();
@@ -69,10 +69,16 @@ public class BookingResource {
             BookingStatus bookingStatus = this.bookingStatusService.findByName(BookingStatus.REQUEST);
             booking.setBookingStatus(bookingStatus);
         }
+        if (booking.getUser() == null) {
+            String username = this.authenticationService.getCurrentUsername();
+            User user = this.userService.findByUsername(username);
+            booking.setUser(user);
+        }
         // ToDo: check if user has already a booking for this day
         String id = uuidGenerator.newId();
         booking.setId(id);
         bookingService.save(booking);
+        // ToDo: send email
 
         return ResponseEntity.status(HttpStatus.CREATED).body(booking);
     }
