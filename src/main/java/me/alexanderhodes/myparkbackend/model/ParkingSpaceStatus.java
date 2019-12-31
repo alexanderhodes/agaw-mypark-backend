@@ -24,7 +24,8 @@ public class ParkingSpaceStatus extends CommonEntity implements Serializable {
     @Column(name = "color")
     private String color;
 
-    public ParkingSpaceStatus(String name, String color) {
+    public ParkingSpaceStatus(String id, String name, String color) {
+        this.id = id;
         this.name = name;
         this.color = color;
     }

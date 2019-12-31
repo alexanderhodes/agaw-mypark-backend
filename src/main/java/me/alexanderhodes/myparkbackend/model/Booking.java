@@ -23,6 +23,9 @@ public class Booking extends CommonEntity implements Serializable {
     private ParkingSpace parkingSpace;
     @Column(name = "date")
     private Date date;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "f_bookingStatus")
+    private BookingStatus bookingStatus;
 
     public Booking(User user, ParkingSpace parkingSpace, Date date) {
         this.user = user;

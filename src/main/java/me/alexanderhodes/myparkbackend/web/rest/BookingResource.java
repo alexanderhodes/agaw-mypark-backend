@@ -2,9 +2,11 @@ package me.alexanderhodes.myparkbackend.web.rest;
 
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.Booking;
+import me.alexanderhodes.myparkbackend.model.BookingStatus;
 import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.service.AuthenticationService;
 import me.alexanderhodes.myparkbackend.service.BookingService;
+import me.alexanderhodes.myparkbackend.service.BookingStatusService;
 import me.alexanderhodes.myparkbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,8 @@ public class BookingResource {
     private UuidGenerator uuidGenerator;
     @Autowired
     private AuthenticationService authenticationService;
+    @Autowired
+    private BookingStatusService bookingStatusService;
 
     @GetMapping("/bookings")
     @PreAuthorize("hasRole('ADMIN')")
@@ -61,6 +65,10 @@ public class BookingResource {
     @PostMapping("/bookings")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Booking> createBooking (@RequestBody Booking booking) {
+        if (booking.getParkingSpace() == null) {
+            BookingStatus bookingStatus = this.bookingStatusService.findByName(BookingStatus.REQUEST);
+            booking.setBookingStatus(bookingStatus);
+        }
         // ToDo: check if user has already a booking for this day
         String id = uuidGenerator.newId();
         booking.setId(id);
