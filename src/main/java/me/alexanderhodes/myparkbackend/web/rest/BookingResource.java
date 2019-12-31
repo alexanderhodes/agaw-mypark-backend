@@ -3,19 +3,17 @@ package me.alexanderhodes.myparkbackend.web.rest;
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.Booking;
 import me.alexanderhodes.myparkbackend.model.User;
+import me.alexanderhodes.myparkbackend.service.AuthenticationService;
 import me.alexanderhodes.myparkbackend.service.BookingService;
 import me.alexanderhodes.myparkbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
@@ -27,6 +25,8 @@ public class BookingResource {
     private UserService userService;
     @Autowired
     private UuidGenerator uuidGenerator;
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @GetMapping("/bookings")
     @PreAuthorize("hasRole('ADMIN')")
@@ -42,16 +42,21 @@ public class BookingResource {
 
     @GetMapping("/bookings/users/{user}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<Booking>> getBookingsForUser (@PathVariable("user") String username) {
-        List<Booking> bookings = new ArrayList<>();
+    public ResponseEntity<List<Booking>> getBookingsForUser () {
+        String username = this.authenticationService.getCurrentUsername();
 
-        User user = userService.findByUsername(username);
-        if (user != null) {
-            List<Booking> foundBookings = bookingService.findByUser(user);
-            bookings.addAll(foundBookings);
+        if (username != null && !username.isEmpty()) {
+            List<Booking> bookings = new ArrayList<>();
+
+            User user = userService.findByUsername(username);
+            if (user != null) {
+                bookings = bookingService.findByUserOrderByDateAsc(user);
+            }
+
+            return ResponseEntity.ok(bookings);
         }
 
-        return ResponseEntity.ok(bookings);
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/bookings")

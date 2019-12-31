@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface BookingService extends CrudRepository<Booking, Long> {
 
-    public List<Booking> findByUser (User user);
+    public List<Booking> findByUserOrderByDateAsc (User user);
 
     public Booking findById (String id);
 

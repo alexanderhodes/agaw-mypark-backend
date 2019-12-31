@@ -1,5 +1,6 @@
 package me.alexanderhodes.myparkbackend.web.rest;
 
+import me.alexanderhodes.myparkbackend.helper.ParkingSpaceComparator;
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.ParkingSpace;
 import me.alexanderhodes.myparkbackend.model.ParkingSpaceStatus;
@@ -11,10 +12,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("api")
@@ -30,10 +28,9 @@ public class ParkingSpaceResource {
     @GetMapping("/parkingspaces")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<List<ParkingSpace>> getParkingSpaces() {
-        List<ParkingSpace> list = new ArrayList<>();
-        parkingSpaceService.findAll().forEach(parkingSpace -> {
-            list.add(parkingSpace);
-        });
+        List<ParkingSpace> list = parkingSpaceService.findAllByOrderByNumber();
+
+        list.sort(new ParkingSpaceComparator());
 
         return ResponseEntity.ok(list);
     }
