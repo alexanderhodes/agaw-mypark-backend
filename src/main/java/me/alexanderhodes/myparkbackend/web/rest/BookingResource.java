@@ -40,20 +40,19 @@ public class BookingResource {
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/bookings/users/{user}")
+    @GetMapping("/bookings/users/")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<List<Booking>> getBookingsForUser () {
         String username = this.authenticationService.getCurrentUsername();
 
         if (username != null && !username.isEmpty()) {
-            List<Booking> bookings = new ArrayList<>();
-
             User user = userService.findByUsername(username);
             if (user != null) {
-                bookings = bookingService.findByUserOrderByDateAsc(user);
+                List<Booking> bookings = bookingService.findByUserOrderByDateAsc(user);
+                return ResponseEntity.ok(bookings);
+            } else {
+                return ResponseEntity.notFound().build();
             }
-
-            return ResponseEntity.ok(bookings);
         }
 
         return ResponseEntity.notFound().build();
