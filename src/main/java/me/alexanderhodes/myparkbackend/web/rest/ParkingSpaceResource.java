@@ -6,7 +6,9 @@ import me.alexanderhodes.myparkbackend.model.ParkingSpaceStatus;
 import me.alexanderhodes.myparkbackend.service.ParkingSpaceService;
 import me.alexanderhodes.myparkbackend.service.ParkingSpaceStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -26,47 +28,57 @@ public class ParkingSpaceResource {
     private UuidGenerator uuidGenerator;
 
     @GetMapping("/parkingspaces")
-    public List<ParkingSpace> getParkingSpaces() {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<ParkingSpace>> getParkingSpaces() {
         List<ParkingSpace> list = new ArrayList<>();
         parkingSpaceService.findAll().forEach(parkingSpace -> {
             list.add(parkingSpace);
         });
 
-        return list;
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping("/parkingspaces")
-    @Secured({"ADMIN"})
-    public ParkingSpace createParkingSpace(@RequestBody ParkingSpace parkingSpace) {
-        ParkingSpaceStatus parkingSpaceStatus = this.parkingSpaceStatusService.findByName(ParkingSpaceStatus.FREE);
-        String uuid = this.uuidGenerator.newId();
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ParkingSpace> createParkingSpace(@RequestBody ParkingSpace parkingSpace) {
+        String number = parkingSpace.getNumber();
+        ParkingSpace existingParkingSpace = this.parkingSpaceService.findByNumber(number);
 
-        parkingSpace.setId(uuid);
-        parkingSpace.setParkingSpaceStatus(parkingSpaceStatus);
+        if (existingParkingSpace == null) {
+            ParkingSpaceStatus parkingSpaceStatus = this.parkingSpaceStatusService.findByName(ParkingSpaceStatus.FREE);
+            String uuid = this.uuidGenerator.newId();
 
-        parkingSpaceService.save(parkingSpace);
+            parkingSpace.setId(uuid);
+            parkingSpace.setParkingSpaceStatus(parkingSpaceStatus);
 
-        return parkingSpace;
+            parkingSpaceService.save(parkingSpace);
+
+            return ResponseEntity.ok(parkingSpace);
+        }
+
+        return ResponseEntity.badRequest().build();
     }
 
     @GetMapping("/parkingspaces/{id}")
-    public ParkingSpace getParkingSpace(@PathVariable("id") long id) {
-        Optional<ParkingSpace> optionalParkingSpace = parkingSpaceService.findById(id);
-        ParkingSpace parkingSpace = optionalParkingSpace.get();
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<ParkingSpace> getParkingSpace(@PathVariable("id") String id) {
+        ParkingSpace parkingSpace = parkingSpaceService.findById(id);
 
-        return parkingSpace;
+        return parkingSpace != null ? ResponseEntity.ok(parkingSpace) : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/parkingspaces/{id}")
-    @Secured({"ADMIN"})
-    public ParkingSpace updateParkingSpace(@RequestBody ParkingSpace parkingSpace, @PathVariable("id") long id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ParkingSpace> updateParkingSpace(@RequestBody ParkingSpace parkingSpace,
+                                                           @PathVariable("id") String id) {
+        parkingSpace.setId(id);
         parkingSpaceService.save(parkingSpace);
 
-        return parkingSpace;
+        return ResponseEntity.ok(parkingSpace);
     }
 
     @DeleteMapping("/parkingspaces/{id}")
-    @Secured({"ADMIN"})
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteParkingSpace(@PathVariable("id") long id) {
         parkingSpaceService.deleteById(id);
     }

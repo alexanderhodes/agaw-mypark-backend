@@ -10,4 +10,6 @@ public interface BookingService extends CrudRepository<Booking, Long> {
 
     public List<Booking> findByUser (User user);
 
+    public Booking findById (String id);
+
 }

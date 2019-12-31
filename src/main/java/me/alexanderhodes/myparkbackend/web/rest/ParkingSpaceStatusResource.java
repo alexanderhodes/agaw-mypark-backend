@@ -3,6 +3,8 @@ package me.alexanderhodes.myparkbackend.web.rest;
 import me.alexanderhodes.myparkbackend.model.ParkingSpaceStatus;
 import me.alexanderhodes.myparkbackend.service.ParkingSpaceStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
@@ -18,6 +20,7 @@ public class ParkingSpaceStatusResource {
     private ParkingSpaceStatusService parkingSpaceStatusService;
 
     @GetMapping("/parkingspacestatus")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public List<ParkingSpaceStatus> getParkingSpaceStatus() {
         List<ParkingSpaceStatus> list = new ArrayList<>();
         parkingSpaceStatusService.findAll().forEach(parkingSpaceStatus -> {
@@ -28,6 +31,7 @@ public class ParkingSpaceStatusResource {
     }
 
     @PostMapping("/parkingspacestatus")
+    @PreAuthorize("hasRole('ADMIN')")
     public ParkingSpaceStatus createParkingSpaceStatus(@RequestBody ParkingSpaceStatus parkingSpaceStatus) {
         parkingSpaceStatusService.save(parkingSpaceStatus);
 
@@ -35,6 +39,7 @@ public class ParkingSpaceStatusResource {
     }
 
     @GetMapping("/parkingspacestatus/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ParkingSpaceStatus getParkingSpaceStatus(@PathParam("id") long id) {
         Optional<ParkingSpaceStatus> optionalParkingSpaceStatus = parkingSpaceStatusService.findById(id);
         ParkingSpaceStatus parkingSpaceStatus = optionalParkingSpaceStatus.get();
@@ -43,6 +48,7 @@ public class ParkingSpaceStatusResource {
     }
 
     @PutMapping("/parkingspacestatus/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ParkingSpaceStatus updateParkingSpaceStatus(@RequestBody ParkingSpaceStatus parkingSpaceStatus, @PathVariable("id") long id) {
         parkingSpaceStatusService.save(parkingSpaceStatus);
 
@@ -50,6 +56,7 @@ public class ParkingSpaceStatusResource {
     }
 
     @DeleteMapping("/parkingspacestatus/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteParkingSpaceStatus(@PathVariable("id") long id) {
         parkingSpaceStatusService.deleteById(id);
     }

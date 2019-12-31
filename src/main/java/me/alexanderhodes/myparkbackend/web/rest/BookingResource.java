@@ -6,6 +6,10 @@ import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.service.BookingService;
 import me.alexanderhodes.myparkbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.print.Book;
@@ -25,18 +29,20 @@ public class BookingResource {
     private UuidGenerator uuidGenerator;
 
     @GetMapping("/bookings")
-    public List<Booking> getBookings () {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Booking>> getBookings () {
         List<Booking> bookings = new ArrayList<>();
 
         bookingService.findAll().forEach(booking -> {
             bookings.add(booking);
         });
 
-        return bookings;
+        return ResponseEntity.ok(bookings);
     }
 
     @GetMapping("/bookings/users/{user}")
-    public List<Booking> getBookingsForUser (@PathVariable("user") String username) {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Booking>> getBookingsForUser (@PathVariable("user") String username) {
         List<Booking> bookings = new ArrayList<>();
 
         User user = userService.findByUsername(username);
@@ -45,32 +51,39 @@ public class BookingResource {
             bookings.addAll(foundBookings);
         }
 
-        return bookings;
+        return ResponseEntity.ok(bookings);
     }
 
     @PostMapping("/bookings")
-    public Booking createBooking (@RequestBody Booking booking) {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Booking> createBooking (@RequestBody Booking booking) {
+        // ToDo: check if user has already a booking for this day
+        String id = uuidGenerator.newId();
+        booking.setId(id);
         bookingService.save(booking);
 
-        return booking;
+        return ResponseEntity.status(HttpStatus.CREATED).body(booking);
     }
 
     @GetMapping("/bookings/{id}")
-    public Booking getBooking (@PathVariable("id") long id) {
-        Optional<Booking> optionalBooking = bookingService.findById(id);
-        Booking booking = optionalBooking.get();
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Booking> getBooking (@PathVariable("id") String id) {
+        Booking booking = bookingService.findById(id);
 
-        return booking;
+        return booking != null ? ResponseEntity.ok(booking) : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/bookings/{id}")
-    public Booking updateBooking (@RequestBody Booking booking, @PathVariable("id") long id) {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Booking> updateBooking (@RequestBody Booking booking, @PathVariable("id") String id) {
+        booking.setId(id);
         bookingService.save(booking);
 
-        return booking;
+        return ResponseEntity.ok(booking);
     }
 
     @DeleteMapping("/bookings/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public void deleteBooking (@PathVariable("id") long id) {
         bookingService.deleteById(id);
     }
