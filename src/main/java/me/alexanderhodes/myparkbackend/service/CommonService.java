@@ -143,7 +143,6 @@ public class CommonService {
         try {
             String placeholderLink = this.urlHelper.getPasswordResetUrl(base64token);
             List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
-            placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_USERNAME", user.getUsername()));
             placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_LINKTOKEN", placeholderLink));
 
             MMail mmail = mailHelper.createMail("alexander.hodes@live.com", EmailTranslations.RESET_PASSWORD,

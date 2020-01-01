@@ -1,19 +1,28 @@
 package me.alexanderhodes.myparkbackend.web.rest;
 
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
+import me.alexanderhodes.myparkbackend.mail.MailHelper;
+import me.alexanderhodes.myparkbackend.mail.MailService;
+import me.alexanderhodes.myparkbackend.mail.model.MMail;
 import me.alexanderhodes.myparkbackend.model.Booking;
 import me.alexanderhodes.myparkbackend.model.BookingStatus;
 import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.service.AuthenticationService;
 import me.alexanderhodes.myparkbackend.service.BookingService;
 import me.alexanderhodes.myparkbackend.service.BookingStatusService;
-import me.alexanderhodes.myparkbackend.service.UserService;
+import me.alexanderhodes.myparkbackend.translations.EmailTranslations;
+import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,17 +33,19 @@ public class BookingResource {
     @Autowired
     private BookingService bookingService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private UuidGenerator uuidGenerator;
     @Autowired
     private AuthenticationService authenticationService;
     @Autowired
     private BookingStatusService bookingStatusService;
+    @Autowired
+    private MailService mailService;
+    @Autowired
+    private MailHelper mailHelper;
 
     @GetMapping("/bookings")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Booking>> getBookings () {
+    public ResponseEntity<List<Booking>> getBookings() {
         List<Booking> bookings = new ArrayList<>();
 
         bookingService.findAll().forEach(booking -> {
@@ -46,32 +57,42 @@ public class BookingResource {
 
     @GetMapping("/bookings/users")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<Booking>> getBookingsForUser () {
-        String username = this.authenticationService.getCurrentUsername();
-
-        if (username != null && !username.isEmpty()) {
-            User user = userService.findByUsername(username);
-            if (user != null) {
-                List<Booking> bookings = bookingService.findByUserOrderByDateAsc(user);
-                return ResponseEntity.ok(bookings);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+    public ResponseEntity<List<Booking>> getBookingsForUser() {
+        User user = this.authenticationService.getCurrentUser();
+        if (user != null) {
+            List<Booking> bookings = bookingService.findByUserOrderByDateAsc(user);
+            return ResponseEntity.ok(bookings);
+        } else {
+            return ResponseEntity.notFound().build();
         }
+    }
 
-        return ResponseEntity.notFound().build();
+    @GetMapping("/bookings/users/{day}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Booking> getBookingForUserAndDay(@PathVariable("day") String date) {
+        String dateTime = new StringBuffer(date).append(" 00:00:00").toString();
+        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+
+        User user = this.authenticationService.getCurrentUser();
+        LocalDateTime after = localDateTime.minusDays(1).withHour(23).withMinute(59).withSecond(59);
+        LocalDateTime before = localDateTime.plusDays(1).withHour(0).withMinute(0).withSecond(0);
+        List<Booking> bookings = bookingService.findByUserAndDateAfterAndDateBefore(user, after, before);
+
+        return (bookings != null && bookings.size() > 0) ? ResponseEntity.ok(bookings.get(0)) : ResponseEntity.ok(null);
     }
 
     @PostMapping("/bookings")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<Booking> createBooking (@RequestBody Booking booking) {
-        if (booking.getParkingSpace() == null) {
+    public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
+        if (booking.getParkingSpace() == null && booking.getBookingStatus() == null) {
             BookingStatus bookingStatus = this.bookingStatusService.findByName(BookingStatus.REQUEST);
+            booking.setBookingStatus(bookingStatus);
+        } else if (booking.getParkingSpace() != null && booking.getBookingStatus() == null) {
+            BookingStatus bookingStatus = this.bookingStatusService.findByName(BookingStatus.CONFIRMED);
             booking.setBookingStatus(bookingStatus);
         }
         if (booking.getUser() == null) {
-            String username = this.authenticationService.getCurrentUsername();
-            User user = this.userService.findByUsername(username);
+            User user = this.authenticationService.getCurrentUser();
             booking.setUser(user);
         }
         // ToDo: check if user has already a booking for this day
@@ -79,13 +100,28 @@ public class BookingResource {
         booking.setId(id);
         bookingService.save(booking);
         // ToDo: send email
+        if (booking.getBookingStatus().getName().equals(BookingStatus.CONFIRMED)) {
+            String receiver = booking.getUser().getUsername();
+            String parkingSpace = booking.getParkingSpace().getNumber();
+
+            List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
+            placeholders.add(new AbstractMap.SimpleEntry<>("PLACEHOLDER_PARKINGSPACE", parkingSpace));
+
+            MMail mail = mailHelper.createMail(receiver, EmailTranslations.BOOKING_SUCCESS_TODAY, placeholders);
+
+            try {
+                this.mailService.send(mail);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(booking);
     }
 
     @GetMapping("/bookings/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<Booking> getBooking (@PathVariable("id") String id) {
+    public ResponseEntity<Booking> getBooking(@PathVariable("id") String id) {
         Booking booking = bookingService.findById(id);
 
         return booking != null ? ResponseEntity.ok(booking) : ResponseEntity.notFound().build();
@@ -93,7 +129,7 @@ public class BookingResource {
 
     @PutMapping("/bookings/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<Booking> updateBooking (@RequestBody Booking booking, @PathVariable("id") String id) {
+    public ResponseEntity<Booking> updateBooking(@RequestBody Booking booking, @PathVariable("id") String id) {
         booking.setId(id);
         bookingService.save(booking);
 
@@ -102,7 +138,7 @@ public class BookingResource {
 
     @DeleteMapping("/bookings/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public void deleteBooking (@PathVariable("id") long id) {
+    public void deleteBooking(@PathVariable("id") long id) {
         bookingService.deleteById(id);
     }
 

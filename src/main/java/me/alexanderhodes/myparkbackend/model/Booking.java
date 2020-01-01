@@ -4,7 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "mp_booking")
@@ -22,12 +22,12 @@ public class Booking extends CommonEntity implements Serializable {
     @JoinColumn(name = "f_parkingSpace")
     private ParkingSpace parkingSpace;
     @Column(name = "date")
-    private Date date;
+    private LocalDateTime date;
     @ManyToOne(optional = false)
     @JoinColumn(name = "f_bookingStatus")
     private BookingStatus bookingStatus;
 
-    public Booking(User user, ParkingSpace parkingSpace, Date date) {
+    public Booking(User user, ParkingSpace parkingSpace, LocalDateTime date) {
         this.user = user;
         this.parkingSpace = parkingSpace;
         this.date = date;
