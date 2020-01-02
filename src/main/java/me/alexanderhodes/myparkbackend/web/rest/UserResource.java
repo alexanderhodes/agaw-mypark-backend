@@ -2,16 +2,15 @@ package me.alexanderhodes.myparkbackend.web.rest;
 
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.User;
+import me.alexanderhodes.myparkbackend.service.AuthenticationService;
 import me.alexanderhodes.myparkbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
-import javax.xml.ws.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +23,8 @@ public class UserResource {
     private UserService userService;
     @Autowired
     private UuidGenerator uuidGenerator;
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
@@ -53,6 +54,14 @@ public class UserResource {
 
         return optionalUser.isPresent() ? ResponseEntity.ok(optionalUser.get().toJson()) :
                 ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/users/current")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<User> getCurrentUser() {
+        User user = authenticationService.getCurrentUser();
+
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping("/users/{id}")
