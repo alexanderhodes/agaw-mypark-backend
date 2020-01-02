@@ -30,9 +30,12 @@ public class User extends CommonEntity implements Serializable {
     private String lastName;
     @Column(name = "enabled")
     private boolean enabled;
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "f_parkingSpace")
+    private ParkingSpace parkingSpace;
 
     public User(String id, String name, String password, String username, String firstName, String lastName,
-                boolean enabled) {
+                boolean enabled, ParkingSpace parkingSpace) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -40,9 +43,11 @@ public class User extends CommonEntity implements Serializable {
         this.firstName = firstName;
         this.lastName = lastName;
         this.enabled = enabled;
+        this.parkingSpace = parkingSpace;
     }
 
     public User toJson() {
-        return new User(this.id, this.name, null, this.username, this.firstName, this.lastName, this.enabled);
+        return new User(this.id, this.name, null, this.username, this.firstName, this.lastName, this.enabled,
+                this.parkingSpace);
     }
 }

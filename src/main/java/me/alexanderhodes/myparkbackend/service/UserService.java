@@ -7,6 +7,12 @@ import java.util.List;
 
 public interface UserService extends CrudRepository<User, Long> {
 
-    User findByUsername(String username);
+    public User findByUsername(String username);
+
+    public User findById (String id);
+
+    public List<User> findAllByEnabled (boolean enabled);
+
+    public void deleteById (String id);
 
 }

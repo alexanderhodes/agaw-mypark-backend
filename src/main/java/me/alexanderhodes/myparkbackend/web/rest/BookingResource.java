@@ -84,6 +84,7 @@ public class BookingResource {
     @PostMapping("/bookings")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
+        // ToDo: if today - check for free parkingspaces for today and assign parkingspace
         if (booking.getParkingSpace() == null && booking.getBookingStatus() == null) {
             BookingStatus bookingStatus = this.bookingStatusService.findByName(BookingStatus.REQUEST);
             booking.setBookingStatus(bookingStatus);

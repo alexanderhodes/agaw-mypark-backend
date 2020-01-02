@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,12 +27,14 @@ public class UserResource {
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<User>> getUsers () {
-        List<User> users = new ArrayList<>();
-        userService.findAll().forEach(user -> {
-            users.add(user.toJson());
-        });
-        return ResponseEntity.ok(users);
+    public ResponseEntity<List<User>> getEnabledUsers () {
+        boolean enabled = true;
+        List<User> users = userService.findAllByEnabled(enabled);
+        List<User> response = new ArrayList<>();
+
+        users.forEach(user -> response.add(user.toJson()));
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/users")
@@ -49,7 +50,7 @@ public class UserResource {
 
     @GetMapping("/users/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<User> getUser(@PathParam("id") long id) {
+    public ResponseEntity<User> getUser(@PathVariable("id") long id) {
         Optional<User> optionalUser = userService.findById(id);
 
         return optionalUser.isPresent() ? ResponseEntity.ok(optionalUser.get().toJson()) :
@@ -66,7 +67,7 @@ public class UserResource {
 
     @PutMapping("/users/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<User> updateUser(@RequestBody User user, @PathParam("id") String id) {
+    public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable("id") String id) {
         user.setId(id);
         userService.save(user);
 
@@ -75,8 +76,12 @@ public class UserResource {
 
     @DeleteMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteUser(@PathParam("id") long id) {
-        userService.deleteById(id);
+    public void deleteUser(@PathVariable("id") String id) {
+        // ToDo: just set inactive that user can not login again
+        User user = userService.findById(id);
+        user.setEnabled(false);
+
+        userService.save(user);
     }
 
 }
