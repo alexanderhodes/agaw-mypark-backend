@@ -1,8 +1,11 @@
 package me.alexanderhodes.myparkbackend.web.rest;
 
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
+import me.alexanderhodes.myparkbackend.model.Role;
 import me.alexanderhodes.myparkbackend.model.User;
+import me.alexanderhodes.myparkbackend.model.UserRole;
 import me.alexanderhodes.myparkbackend.service.AuthenticationService;
+import me.alexanderhodes.myparkbackend.service.UserRoleService;
 import me.alexanderhodes.myparkbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,8 @@ public class UserResource {
     private UuidGenerator uuidGenerator;
     @Autowired
     private AuthenticationService authenticationService;
+    @Autowired
+    private UserRoleService userRoleService;
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
@@ -83,6 +88,26 @@ public class UserResource {
         user.setParkingSpace(null);
 
         userService.save(user);
+    }
+
+    @PutMapping("/users/{id}/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<User> updateAdminRole(@PathVariable("id") String id) {
+        Role admin = new Role("ADMIN");
+        User user = userService.findById(id);
+
+        UserRole userRole = userRoleService.findByUserAndRole(user, admin);
+
+        if (userRole != null) {
+            // admin role exists and has to be deleted
+            userRoleService.delete(userRole);
+        } else {
+            // admin role does not exist and has to be created
+            userRole = new UserRole(user, admin);
+            userRoleService.save(userRole);
+        }
+
+        return ResponseEntity.ok(user);
     }
 
 }
