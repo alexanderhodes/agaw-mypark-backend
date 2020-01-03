@@ -80,6 +80,7 @@ public class UserResource {
         // ToDo: just set inactive that user can not login again
         User user = userService.findById(id);
         user.setEnabled(false);
+        user.setParkingSpace(null);
 
         userService.save(user);
     }
