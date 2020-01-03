@@ -16,4 +16,6 @@ public interface ParkingSpaceService extends CrudRepository<ParkingSpace, Long> 
 
     public List<ParkingSpace> findAll (Sort sort);
 
+    public void deleteById (String id);
+
 }

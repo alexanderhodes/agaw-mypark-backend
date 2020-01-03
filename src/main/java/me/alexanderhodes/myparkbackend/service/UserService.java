@@ -1,5 +1,6 @@
 package me.alexanderhodes.myparkbackend.service;
 
+import me.alexanderhodes.myparkbackend.model.ParkingSpace;
 import me.alexanderhodes.myparkbackend.model.User;
 import org.springframework.data.repository.CrudRepository;
 
@@ -14,5 +15,7 @@ public interface UserService extends CrudRepository<User, Long> {
     public List<User> findAllByEnabled (boolean enabled);
 
     public void deleteById (String id);
+
+    public User findByParkingSpace (ParkingSpace parkingSpace);
 
 }

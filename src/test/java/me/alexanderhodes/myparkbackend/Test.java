@@ -1,5 +1,8 @@
 package me.alexanderhodes.myparkbackend;
 
+import org.apache.tomcat.jni.Local;
+
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -21,6 +24,9 @@ public class Test {
             System.out.println("insert into mp_parkingspace (id, number, f_parking_space_status) VALUES ('" +
                     UUID.randomUUID().toString() + "', '" + (78 + i) + "', '40aaea05-317c-4ba1-96a2-474f4dd73b1b');");
         }
+
+        LocalTime localTime = LocalTime.parse("10:00");
+        System.out.println(localTime);
     }
 
 }
