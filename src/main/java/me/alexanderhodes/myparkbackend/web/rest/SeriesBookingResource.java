@@ -68,6 +68,7 @@ public class SeriesBookingResource {
                 seriesBooking.setUser(user);
                 seriesBookingService.save(seriesBooking);
             });
+            return ResponseEntity.ok(list);
         }
         return ResponseEntity.badRequest().build();
     }
