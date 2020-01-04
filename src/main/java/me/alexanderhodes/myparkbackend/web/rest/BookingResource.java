@@ -139,7 +139,7 @@ public class BookingResource {
 
     @DeleteMapping("/bookings/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public void deleteBooking(@PathVariable("id") long id) {
+    public void deleteBooking(@PathVariable("id") String id) {
         bookingService.deleteById(id);
     }
 
