@@ -6,16 +6,16 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface UserService extends CrudRepository<User, Long> {
+public interface UserService extends CrudRepository<User, String> {
 
     public User findByUsername(String username);
-
-    public User findById (String id);
 
     public List<User> findAllByEnabled (boolean enabled);
 
     public void deleteById (String id);
 
     public User findByParkingSpace (ParkingSpace parkingSpace);
+
+    public List<User> findByParkingSpaceIsNotNull ();
 
 }

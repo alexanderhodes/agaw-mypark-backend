@@ -6,11 +6,9 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface ParkingSpaceService extends CrudRepository<ParkingSpace, Long> {
+public interface ParkingSpaceService extends CrudRepository<ParkingSpace, String> {
 
     public ParkingSpace findByNumber (String number);
-
-    public ParkingSpace findById (String id);
 
     public List<ParkingSpace> findAllByOrderByNumber ();
 

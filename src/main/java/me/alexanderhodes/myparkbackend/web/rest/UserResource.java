@@ -55,7 +55,7 @@ public class UserResource {
 
     @GetMapping("/users/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<User> getUser(@PathVariable("id") long id) {
+    public ResponseEntity<User> getUser(@PathVariable("id") String id) {
         Optional<User> optionalUser = userService.findById(id);
 
         return optionalUser.isPresent() ? ResponseEntity.ok(optionalUser.get().toJson()) :
@@ -83,31 +83,63 @@ public class UserResource {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(@PathVariable("id") String id) {
         // ToDo: just set inactive that user can not login again
-        User user = userService.findById(id);
-        user.setEnabled(false);
-        user.setParkingSpace(null);
+        Optional<User> optional = userService.findById(id);
 
-        userService.save(user);
+        if (optional.isPresent()) {
+            User user = optional.get();
+
+            user.setEnabled(false);
+            user.setParkingSpace(null);
+
+            userService.save(user);
+        }
     }
 
     @PutMapping("/users/{id}/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> updateAdminRole(@PathVariable("id") String id) {
         Role admin = new Role("ADMIN");
-        User user = userService.findById(id);
+        User user = null;
+        Optional<User> optional = userService.findById(id);
 
-        UserRole userRole = userRoleService.findByUserAndRole(user, admin);
+        if (optional.isPresent()) {
+            user = optional.get();
 
-        if (userRole != null) {
-            // admin role exists and has to be deleted
-            userRoleService.delete(userRole);
-        } else {
-            // admin role does not exist and has to be created
-            userRole = new UserRole(user, admin);
-            userRoleService.save(userRole);
+            UserRole userRole = userRoleService.findByUserAndRole(user, admin);
+
+            if (userRole != null) {
+                // admin role exists and has to be deleted
+                userRoleService.delete(userRole);
+            } else {
+                // admin role does not exist and has to be created
+                userRole = new UserRole(user, admin);
+                userRoleService.save(userRole);
+            }
         }
 
         return ResponseEntity.ok(user);
     }
+
+    @GetMapping("/users/parkingspace")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<User>> getUsersWithParkingSpace() {
+        List<User> users = this.userService.findByParkingSpaceIsNotNull();
+
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/users/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<User>> getUsersWithRoleAdmin() {
+        List<User> users = new ArrayList<>();
+        Role admin = new Role("ADMIN");
+
+        List<UserRole> userRoles = this.userRoleService.findByRole(admin);
+
+        userRoles.forEach(userRole -> users.add(userRole.getUser().toJson()));
+
+        return ResponseEntity.ok(users);
+    }
+
 
 }

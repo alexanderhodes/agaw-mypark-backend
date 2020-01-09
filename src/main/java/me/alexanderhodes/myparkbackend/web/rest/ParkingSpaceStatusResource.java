@@ -38,7 +38,7 @@ public class ParkingSpaceStatusResource {
 
     @GetMapping("/parkingspacestatus/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ParkingSpaceStatus getParkingSpaceStatus(@PathVariable("id") long id) {
+    public ParkingSpaceStatus getParkingSpaceStatus(@PathVariable("id") String id) {
         Optional<ParkingSpaceStatus> optionalParkingSpaceStatus = parkingSpaceStatusService.findById(id);
         ParkingSpaceStatus parkingSpaceStatus = optionalParkingSpaceStatus.get();
 
@@ -47,7 +47,7 @@ public class ParkingSpaceStatusResource {
 
     @PutMapping("/parkingspacestatus/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ParkingSpaceStatus updateParkingSpaceStatus(@RequestBody ParkingSpaceStatus parkingSpaceStatus, @PathVariable("id") long id) {
+    public ParkingSpaceStatus updateParkingSpaceStatus(@RequestBody ParkingSpaceStatus parkingSpaceStatus, @PathVariable("id") String id) {
         parkingSpaceStatusService.save(parkingSpaceStatus);
 
         return parkingSpaceStatus;
@@ -55,7 +55,7 @@ public class ParkingSpaceStatusResource {
 
     @DeleteMapping("/parkingspacestatus/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteParkingSpaceStatus(@PathVariable("id") long id) {
+    public void deleteParkingSpaceStatus(@PathVariable("id") String id) {
         parkingSpaceStatusService.deleteById(id);
     }
 

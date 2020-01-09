@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
@@ -123,9 +124,9 @@ public class BookingResource {
     @GetMapping("/bookings/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Booking> getBooking(@PathVariable("id") String id) {
-        Booking booking = bookingService.findById(id);
+        Optional<Booking> optional = bookingService.findById(id);
 
-        return booking != null ? ResponseEntity.ok(booking) : ResponseEntity.notFound().build();
+        return optional.isPresent() ? ResponseEntity.ok(optional.get()) : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/bookings/{id}")

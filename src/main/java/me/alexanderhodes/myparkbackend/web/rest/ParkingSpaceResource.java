@@ -62,9 +62,9 @@ public class ParkingSpaceResource {
     @GetMapping("/parkingspaces/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<ParkingSpace> getParkingSpace(@PathVariable("id") String id) {
-        ParkingSpace parkingSpace = this.parkingSpaceService.findById(id);
+        Optional<ParkingSpace> optional = this.parkingSpaceService.findById(id);
 
-        return parkingSpace != null ? ResponseEntity.ok(parkingSpace) : ResponseEntity.notFound().build();
+        return optional.isPresent() ? ResponseEntity.ok(optional.get()) : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/parkingspaces/{id}")
@@ -80,16 +80,19 @@ public class ParkingSpaceResource {
     @DeleteMapping("/parkingspaces/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteParkingSpace(@PathVariable("id") String id) {
-        ParkingSpace parkingSpace = this.parkingSpaceService.findById(id);
+        Optional<ParkingSpace> optional = this.parkingSpaceService.findById(id);
 
-        // set parkingspace of user to null
-        User user = this.userService.findByParkingSpace(parkingSpace);
-        if (user != null) {
-            user.setParkingSpace(null);
-            this.userService.save(user);
+        if (optional.isPresent()) {
+            ParkingSpace parkingSpace = optional.get();
+            // set parkingspace of user to null
+            User user = this.userService.findByParkingSpace(parkingSpace);
+            if (user != null) {
+                user.setParkingSpace(null);
+                this.userService.save(user);
+            }
+
+            this.parkingSpaceService.delete(parkingSpace);
         }
-
-        this.parkingSpaceService.delete(parkingSpace);
     }
 
 }
