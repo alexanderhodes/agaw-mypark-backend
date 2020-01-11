@@ -75,9 +75,19 @@ public class UserResource {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable("id") String id) {
         user.setId(id);
+        user.setEnabled(true);
+
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            Optional<User> foundUser = this.userService.findById(id);
+
+            if (foundUser.isPresent()) {
+                user.setPassword(foundUser.get().getPassword());
+            }
+        }
+
         userService.save(user);
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(user.toJson());
     }
 
     @DeleteMapping("/users/{id}")

@@ -29,7 +29,7 @@ public class CommonResource {
     public ResponseEntity<User> validatePasswordResetToken(@PathVariable("token") String base64Token) {
         User user = commonService.validateToken(base64Token);
 
-        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
+        return user != null ? ResponseEntity.ok(user.toJson()) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/common/password/reset/{token}")
@@ -65,7 +65,7 @@ public class CommonResource {
             // remove token
             this.commonService.deleteToken(base64Token);
 
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(user.toJson());
         }
 
         return ResponseEntity.notFound().build();

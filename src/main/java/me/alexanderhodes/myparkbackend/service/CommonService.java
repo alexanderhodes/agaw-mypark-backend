@@ -54,8 +54,9 @@ public class CommonService {
         if (user != null) {
             // 2. Token generieren und in DB speichern
             String base64token = createToken(email, user, Token.PASSWORD_RESET);
+            String placeholderLink = this.urlHelper.getPasswordResetUrl(base64token);
             // 3. E-Mail senden
-            sendMailWithToken(user, base64token);
+            sendMailWithToken(user, placeholderLink, EmailTranslations.RESET_PASSWORD);
 
             return user.toJson();
         }
@@ -65,9 +66,13 @@ public class CommonService {
 
     public User validateToken (String base64Token) {
         String id = uuidGenerator.getIdFromBase64Token(base64Token);
-        Optional<Token> optional = tokenService.findById(id);
+        if (id != null) {
+            Optional<Token> optional = tokenService.findById(id);
 
-        return optional.isPresent() ? optional.get().getUser().toJson() : null;
+            return optional.isPresent() ? optional.get().getUser() : null;
+        }
+
+        return null;
     }
 
     public boolean storePassword (String base64Token, String formData) {
@@ -103,8 +108,9 @@ public class CommonService {
             // send registration mail
             // 2. Token generieren und in DB speichern
             String base64token = createToken(user.getUsername(), user, Token.REGISTRATION);
+            String placeholderLink = this.urlHelper.getConfirmRegistrationUrl(base64token);
             // 3. E-Mail senden
-            sendMailWithToken(user, base64token);
+            sendMailWithToken(user, placeholderLink, EmailTranslations.NEW_ACCOUNT);
 
             return user;
         }
@@ -139,14 +145,14 @@ public class CommonService {
         return base64token;
     }
 
-    private void sendMailWithToken(User user, String base64token) {
+    private void sendMailWithToken(User user, String placeholderLink, String key) {
         try {
-            String placeholderLink = this.urlHelper.getPasswordResetUrl(base64token);
             List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
             placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_LINKTOKEN", placeholderLink));
 
-            MMail mmail = mailHelper.createMail("alexander.hodes@live.com", EmailTranslations.RESET_PASSWORD,
-                    placeholders);
+            String username = user.getFirstName() + " " + user.getLastName();
+
+            MMail mmail = mailHelper.createMail(user.getUsername(), username, key, placeholders);
             if (sendMail) {
                 mailService.send(mmail);
             }

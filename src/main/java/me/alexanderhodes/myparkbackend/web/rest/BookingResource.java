@@ -105,11 +105,13 @@ public class BookingResource {
         if (booking.getBookingStatus().getName().equals(BookingStatus.CONFIRMED)) {
             String receiver = booking.getUser().getUsername();
             String parkingSpace = booking.getParkingSpace().getNumber();
+            String username = booking.getUser().getFirstName() + " " + booking.getUser().getLastName();
 
             List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
             placeholders.add(new AbstractMap.SimpleEntry<>("PLACEHOLDER_PARKINGSPACE", parkingSpace));
 
-            MMail mail = mailHelper.createMail(receiver, EmailTranslations.BOOKING_SUCCESS_TODAY, placeholders);
+            MMail mail = mailHelper.createMail(receiver, username, EmailTranslations.BOOKING_SUCCESS_TODAY,
+                    placeholders);
 
             try {
                 this.mailService.send(mail);

@@ -44,7 +44,6 @@ public class UuidGenerator {
 
             return index > array.length ? null : array[index];
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
             return null;
         }
     }

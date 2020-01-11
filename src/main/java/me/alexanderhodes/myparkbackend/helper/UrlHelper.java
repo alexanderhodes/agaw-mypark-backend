@@ -15,6 +15,10 @@ public class UrlHelper {
         return new StringBuffer(this.frontendUrl).append("common/password/").append(token).toString();
     }
 
+    public String getConfirmRegistrationUrl(String token) {
+        return new StringBuffer(this.frontendUrl).append("common/confirm-registration/").append(token).toString();
+    }
+
     public String getFrontendUrl() {
         return this.frontendUrl;
     }

@@ -28,11 +28,12 @@ public class MailHelper {
 
     }
 
-    public MMail createMail(String receiver, String key, List<AbstractMap.SimpleEntry<String, String>> placeholders) {
+    public MMail createMail(String receiver, String username, String key,
+                            List<AbstractMap.SimpleEntry<String, String>> placeholders) {
         if (placeholders == null) {
             placeholders = new ArrayList<>();
         }
-        String text = this.createText(key, placeholders);
+        String text = this.createText(key, placeholders, username);
         String subject = emailTranslations.getSubject(key);
 
         MMail mail = new MMail(receiver, subject, text);
@@ -40,7 +41,7 @@ public class MailHelper {
         return mail;
     }
 
-    private String createText(String key, List<AbstractMap.SimpleEntry<String, String>> placeholders) {
+    private String createText(String key, List<AbstractMap.SimpleEntry<String, String>> placeholders, String username) {
         String htmlBody = this.fileImport.getText("email-template.html");
         final StringBuffer buffer = new StringBuffer(htmlBody);
 
@@ -50,7 +51,7 @@ public class MailHelper {
         replacePlaceholder(buffer, contentEntry);
 
         // add standard placeholders for headline url and content
-        placeholders.addAll(this.addPlaceholders(key));
+        placeholders.addAll(this.addPlaceholders(key, username));
 
         placeholders.forEach(simpleEntry -> {
             // while loop is necessary because an entry can be in this template multiple times
@@ -68,12 +69,11 @@ public class MailHelper {
         buffer.replace(start, start + end, simpleEntry.getValue());
     }
 
-    private List<AbstractMap.SimpleEntry<String, String>> addPlaceholders (String key) {
+    private List<AbstractMap.SimpleEntry<String, String>> addPlaceholders (String key, String username) {
         List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
 
         String headline = this.emailTranslations.getHeadline(key);
         String url = this.urlHelper.getFrontendUrl();
-        String username = this.authenticationService.getCurrentUsername();
 
         placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_HEADLINE", headline));
         placeholders.add(new AbstractMap.SimpleEntry("PLACEHOLDER_URL", url));
