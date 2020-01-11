@@ -4,6 +4,7 @@ import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.Role;
 import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.model.UserRole;
+import me.alexanderhodes.myparkbackend.model.helper.UserAdmin;
 import me.alexanderhodes.myparkbackend.service.AuthenticationService;
 import me.alexanderhodes.myparkbackend.service.UserRoleService;
 import me.alexanderhodes.myparkbackend.service.UserService;
@@ -117,13 +118,19 @@ public class UserResource {
             }
         }
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(user.toJson());
     }
 
     @GetMapping("/users/parkingspace")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<User>> getUsersWithParkingSpace() {
-        List<User> users = this.userService.findByParkingSpaceIsNotNull();
+    public ResponseEntity<List<User>> getUsersWithParkingSpace(@RequestParam(value = "with", defaultValue = "false")
+                                                                           boolean withParkingSpace) {
+        List<User> users = withParkingSpace ? this.userService.findByParkingSpaceIsNotNull()
+                : this.userService.findByParkingSpaceIsNull();
+
+        for (int i = 0; i < users.size(); i++) {
+            users.set(i, users.get(i).toJson());
+        }
 
         return ResponseEntity.ok(users);
     }
@@ -137,6 +144,14 @@ public class UserResource {
         List<UserRole> userRoles = this.userRoleService.findByRole(admin);
 
         userRoles.forEach(userRole -> users.add(userRole.getUser().toJson()));
+
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/users/isadmin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserAdmin>> getUsersWithIsAdmin() {
+        List<UserAdmin> users = this.userService.findByAdmin();
 
         return ResponseEntity.ok(users);
     }

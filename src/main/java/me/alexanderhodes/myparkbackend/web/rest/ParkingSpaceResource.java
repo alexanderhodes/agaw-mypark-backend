@@ -5,6 +5,7 @@ import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.ParkingSpace;
 import me.alexanderhodes.myparkbackend.model.ParkingSpaceStatus;
 import me.alexanderhodes.myparkbackend.model.User;
+import me.alexanderhodes.myparkbackend.model.helper.ParkingSpaceUser;
 import me.alexanderhodes.myparkbackend.service.ParkingSpaceService;
 import me.alexanderhodes.myparkbackend.service.ParkingSpaceStatusService;
 import me.alexanderhodes.myparkbackend.service.UserService;
@@ -93,6 +94,14 @@ public class ParkingSpaceResource {
 
             this.parkingSpaceService.delete(parkingSpace);
         }
+    }
+
+    @GetMapping("/parkingspaces/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ParkingSpaceUser>> findParkingSpacesWithUser() {
+        List<ParkingSpaceUser> list = this.parkingSpaceService.findAllWithUser();
+
+        return ResponseEntity.ok(list);
     }
 
 }
