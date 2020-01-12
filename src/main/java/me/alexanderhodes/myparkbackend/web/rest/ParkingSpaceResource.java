@@ -119,9 +119,10 @@ public class ParkingSpaceResource {
     }
 
 
-    @GetMapping("/parkingspaces/system/update/{day}")
-    public ResponseEntity<List<ParkingSpace>> updateParkingSpaceStatus(@PathVariable("day") String date) {
-        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+    @GetMapping("/parkingspaces/system/update")
+    @PreAuthorize("hasRole('SYSTEM')")
+    public ResponseEntity<List<ParkingSpace>> updateParkingSpaceStatus() {
+        LocalDate localDate = LocalDate.now();
         LocalDateTime start = localDate.atTime(0, 0);
         LocalDateTime end = localDate.atTime(23, 59);
 
