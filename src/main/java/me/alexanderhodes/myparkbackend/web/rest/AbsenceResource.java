@@ -6,10 +6,12 @@ import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.service.AbsenceService;
 import me.alexanderhodes.myparkbackend.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -63,6 +65,18 @@ public class AbsenceResource {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public void deleteAbsence(@PathVariable("id") String id) {
         this.absenceService.deleteById(id);
+    }
+
+    @DeleteMapping("/absences/system")
+    @PreAuthorize("hasRole('SYSTEM')")
+    public ResponseEntity doAbsenceHousekeeping() {
+        LocalDate today = LocalDate.now();
+        try {
+            this.absenceService.deleteByEndBefore(today);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.ok().build();
     }
 
 }

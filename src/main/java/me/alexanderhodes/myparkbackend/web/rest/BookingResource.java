@@ -11,9 +11,7 @@ import me.alexanderhodes.myparkbackend.service.AuthenticationService;
 import me.alexanderhodes.myparkbackend.service.BookingService;
 import me.alexanderhodes.myparkbackend.service.BookingStatusService;
 import me.alexanderhodes.myparkbackend.translations.EmailTranslations;
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -144,6 +142,18 @@ public class BookingResource {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public void deleteBooking(@PathVariable("id") String id) {
         bookingService.deleteById(id);
+    }
+
+    @DeleteMapping("/bookings/system")
+    @PreAuthorize("hasRole('SYSTEM')")
+    public ResponseEntity doBookingHousekeeping() {
+        LocalDateTime now = LocalDateTime.now();
+        try {
+            this.bookingService.deleteByDateBefore(now);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.ok().build();
     }
 
 }
