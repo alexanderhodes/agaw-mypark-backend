@@ -34,4 +34,8 @@ public interface ParkingSpaceService extends CrudRepository<ParkingSpace, String
             "))) order by p.number")
     public List<ParkingSpace> findFreeParkingSpacesForDay(@Param("date") LocalDate localDate);
 
+    @Query("SELECT p FROM ParkingSpace p WHERE p.parkingSpaceStatus.id = " +
+            "(SELECT b.id FROM ParkingSpaceStatus WHERE name = :name)")
+    public List<ParkingSpace> findByParkingSpaceStatus(@Param("name") String status);
+
 }
