@@ -1,6 +1,8 @@
 package me.alexanderhodes.myparkbackend.model;
 
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -31,5 +33,9 @@ public class Booking extends CommonEntity implements Serializable {
         this.user = user;
         this.parkingSpace = parkingSpace;
         this.date = date;
+    }
+
+    public User getUser() {
+        return this.user == null ? this.user : this.user.toJson();
     }
 }

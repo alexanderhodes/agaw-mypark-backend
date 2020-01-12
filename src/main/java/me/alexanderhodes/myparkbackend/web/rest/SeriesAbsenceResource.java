@@ -72,4 +72,12 @@ public class SeriesAbsenceResource {
         return ResponseEntity.badRequest().build();
     }
 
+    @GetMapping("/seriesabsences/system/{weekday}")
+    @PreAuthorize("hasRole('SYSTEM')")
+    public ResponseEntity<List<SeriesAbsence>> findActiveSeriesAbsencesByWeekDay(
+            @PathVariable("weekday") int weekDay) {
+        List<SeriesAbsence> list = this.seriesAbsenceService.findActiveByWeekDay(weekDay);
+        return ResponseEntity.ok(list);
+    }
+
 }

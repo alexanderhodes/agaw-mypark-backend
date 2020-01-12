@@ -30,4 +30,9 @@ public class Absence implements Serializable {
         this.start = start;
         this.end = end;
     }
+
+    public User getUser() {
+        return this.user == null ? this.user : this.user.toJson();
+    }
+
 }

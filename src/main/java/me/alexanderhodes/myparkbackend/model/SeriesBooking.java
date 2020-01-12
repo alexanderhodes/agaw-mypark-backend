@@ -35,4 +35,7 @@ public class SeriesBooking implements Serializable {
         this.weekday = weekday;
     }
 
+    public User getUser() {
+        return user.toJson();
+    }
 }

@@ -14,7 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
@@ -100,6 +103,16 @@ public class ParkingSpaceResource {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ParkingSpaceUser>> findParkingSpacesWithUser() {
         List<ParkingSpaceUser> list = this.parkingSpaceService.findAllWithUser();
+
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/parkingspaces/system/free/{day}")
+    @PreAuthorize("hasRole('SYSTEM')")
+    public ResponseEntity<List<ParkingSpace>> findFreeParkingSpacesForDay(@PathVariable("day") String date) {
+        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+
+        List<ParkingSpace> list = this.parkingSpaceService.findFreeParkingSpacesForDay(localDate);
 
         return ResponseEntity.ok(list);
     }

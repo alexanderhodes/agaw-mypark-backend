@@ -38,7 +38,7 @@ public class AbsenceResource {
     }
 
     @PostMapping("/absences")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('SYSTEM')")
     public ResponseEntity<Absence> createAbsence(@RequestBody Absence absence) {
         String id = this.uuidGenerator.newId();
         absence.setId(id);

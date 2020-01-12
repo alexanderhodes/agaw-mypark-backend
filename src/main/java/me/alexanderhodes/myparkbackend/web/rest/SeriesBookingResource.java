@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -71,5 +70,13 @@ public class SeriesBookingResource {
             return ResponseEntity.ok(list);
         }
         return ResponseEntity.badRequest().build();
+    }
+
+    @GetMapping("/seriesbookings/system/{weekday}")
+    @PreAuthorize("hasRole('SYSTEM')")
+    public ResponseEntity<List<SeriesBooking>> findActiveSeriesBookingsByWeekDay(
+            @PathVariable("weekday") int weekDay) {
+        List<SeriesBooking> list = this.seriesBookingService.findActiveByWeekDay(weekDay);
+        return ResponseEntity.ok(list);
     }
 }

@@ -34,4 +34,9 @@ public class SeriesAbsence implements Serializable {
         this.time = time;
         this.weekday = weekday;
     }
+
+    public User getUser() {
+        return this.user.toJson();
+    }
+
 }

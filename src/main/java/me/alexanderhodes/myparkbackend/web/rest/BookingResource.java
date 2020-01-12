@@ -81,7 +81,7 @@ public class BookingResource {
     }
 
     @PostMapping("/bookings")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('SYSTEM')")
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
         // ToDo: if today - check for free parkingspaces for today and assign parkingspace
         if (booking.getParkingSpace() == null && booking.getBookingStatus() == null) {
@@ -154,6 +154,19 @@ public class BookingResource {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/bookings/system/{day}")
+    @PreAuthorize("hasRole('SYSTEM')")
+    public ResponseEntity<List<Booking>> getBookingsForDay(@PathVariable("day") String date) {
+        String dateTime = new StringBuffer(date).append(" 00:00:00").toString();
+        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+
+        LocalDateTime after = localDateTime.minusDays(1).withHour(23).withMinute(59).withSecond(59);
+        LocalDateTime before = localDateTime.plusDays(1).withHour(0).withMinute(0).withSecond(0);
+        List<Booking> bookings = bookingService.findByDateAfterAndDateBefore(after, before);
+
+        return ResponseEntity.ok(bookings);
     }
 
 }
