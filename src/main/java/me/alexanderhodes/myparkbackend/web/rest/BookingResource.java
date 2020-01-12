@@ -83,8 +83,8 @@ public class BookingResource {
         Booking booking = this.findBookingForDay(day, body.getUser());
 
         if (booking == null) {
-            if (booking.getDate().toLocalDate().equals(LocalDate.now())) {
-                if (booking.getParkingSpace() == null) {
+            if (body.getDate().toLocalDate().equals(LocalDate.now())) {
+                if (body.getParkingSpace() == null) {
                     // 1. heute -> Parkplätze sind frei
                     List<ParkingSpace> parkingSpaces = this.parkingSpaceService
                             .findByParkingSpaceStatus(ParkingSpaceStatus.FREE);
