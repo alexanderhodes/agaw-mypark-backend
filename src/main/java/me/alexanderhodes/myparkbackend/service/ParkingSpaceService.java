@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ParkingSpaceService extends CrudRepository<ParkingSpace, String> {
@@ -37,5 +38,11 @@ public interface ParkingSpaceService extends CrudRepository<ParkingSpace, String
     @Query("SELECT p FROM ParkingSpace p WHERE p.parkingSpaceStatus.id = " +
             "(SELECT b.id FROM ParkingSpaceStatus b WHERE b.name = :name)")
     public List<ParkingSpace> findByParkingSpaceStatus(@Param("name") String status);
+
+    @Query("SELECT p FROM ParkingSpace p " +
+            "WHERE p.id in (SELECT a.parkingSpace.id FROM Booking a WHERE a.parkingSpace IS NOT NULL " +
+            "AND a.date BETWEEN :start AND :ende)")
+    public List<ParkingSpace> findBookedParkingSpacesForDay(@Param("start") LocalDateTime start,
+                                                            @Param("ende") LocalDateTime end);
 
 }

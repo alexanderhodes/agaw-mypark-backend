@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -115,6 +116,39 @@ public class ParkingSpaceResource {
         List<ParkingSpace> list = this.parkingSpaceService.findFreeParkingSpacesForDay(localDate);
 
         return ResponseEntity.ok(list);
+    }
+
+
+    @GetMapping("/parkingspaces/system/update/{day}")
+    public ResponseEntity<List<ParkingSpace>> updateParkingSpaceStatus(@PathVariable("day") String date) {
+        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        LocalDateTime start = localDate.atTime(0, 0);
+        LocalDateTime end = localDate.atTime(23, 59);
+
+        ParkingSpaceStatus free = this.parkingSpaceStatusService.findByName(ParkingSpaceStatus.FREE);
+        ParkingSpaceStatus used = this.parkingSpaceStatusService.findByName(ParkingSpaceStatus.USED);
+
+        // alle als belegt markieren
+        List<ParkingSpace> allParkingSpaces = this.parkingSpaceService.findAllByOrderByNumber();
+        allParkingSpaces.forEach(parkingSpace -> {
+            parkingSpace.setParkingSpaceStatus(used);
+            this.parkingSpaceService.save(parkingSpace);
+        });
+        // freie Parkplätze durch Freigaben markieren
+        List<ParkingSpace> freeParkingSpaces = this.parkingSpaceService.findFreeParkingSpacesForDay(localDate);
+        freeParkingSpaces.forEach(parkingSpace -> {
+            parkingSpace.setParkingSpaceStatus(free);
+            this.parkingSpaceService.save(parkingSpace);
+        });
+        // belegte Parkplätze durch Buchungen
+        List<ParkingSpace> bookedParkingSpaces = this.parkingSpaceService.findBookedParkingSpacesForDay(start, end);
+        bookedParkingSpaces.forEach(parkingSpace -> {
+            parkingSpace.setParkingSpaceStatus(used);
+            this.parkingSpaceService.save(parkingSpace);
+        });
+
+        List<ParkingSpace> parkingSpaces = this.parkingSpaceService.findAllByOrderByNumber();
+        return ResponseEntity.ok(parkingSpaces);
     }
 
 }
