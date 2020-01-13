@@ -5,10 +5,7 @@ import me.alexanderhodes.myparkbackend.mail.MailHelper;
 import me.alexanderhodes.myparkbackend.mail.MailService;
 import me.alexanderhodes.myparkbackend.mail.model.MMail;
 import me.alexanderhodes.myparkbackend.model.*;
-import me.alexanderhodes.myparkbackend.service.AuthenticationService;
-import me.alexanderhodes.myparkbackend.service.BookingService;
-import me.alexanderhodes.myparkbackend.service.BookingStatusService;
-import me.alexanderhodes.myparkbackend.service.ParkingSpaceService;
+import me.alexanderhodes.myparkbackend.service.*;
 import me.alexanderhodes.myparkbackend.translations.EmailTranslations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,6 +36,8 @@ public class BookingResource {
     private BookingStatusService bookingStatusService;
     @Autowired
     private ParkingSpaceService parkingSpaceService;
+    @Autowired
+    private ParkingSpaceStatusService parkingSpaceStatusService;
     @Autowired
     private MailService mailService;
     @Autowired
@@ -98,6 +97,11 @@ public class BookingResource {
                     BookingStatus bookingStatus = this.bookingStatusService.findByName(BookingStatus.CONFIRMED);
                     body.setBookingStatus(bookingStatus);
                 }
+                ParkingSpaceStatus parkingSpaceStatus =
+                        this.parkingSpaceStatusService.findByName(ParkingSpaceStatus.USED);
+                ParkingSpace parkingSpace = body.getParkingSpace();
+                parkingSpace.setParkingSpaceStatus(parkingSpaceStatus);
+                this.parkingSpaceService.save(parkingSpace);
             } else {
                 // 3. in Zukunft
                 // 4. morgen
