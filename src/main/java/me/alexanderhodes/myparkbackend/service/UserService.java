@@ -25,6 +25,7 @@ public interface UserService extends CrudRepository<User, String> {
     @Query("select new me.alexanderhodes.myparkbackend.model.helper.UserAdmin(u, " +
             "case when count(u) > 1 then true else false end) from User u " +
             "join UserRole ur on u.id = ur.user.id " +
+            "where ur.role.name <> 'SYSTEM'" +
             "group by u")
     public List<UserAdmin> findByAdmin();
 
