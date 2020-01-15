@@ -1,6 +1,7 @@
 package me.alexanderhodes.myparkbackend.service;
 
 import me.alexanderhodes.myparkbackend.helper.FormDataHandler;
+import me.alexanderhodes.myparkbackend.helper.PasswordHelper;
 import me.alexanderhodes.myparkbackend.helper.UrlHelper;
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.mail.MailHelper;
@@ -13,7 +14,6 @@ import me.alexanderhodes.myparkbackend.model.UserRole;
 import me.alexanderhodes.myparkbackend.translations.EmailTranslations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -45,6 +45,8 @@ public class CommonService {
     private UrlHelper urlHelper;
     @Autowired
     private MailHelper mailHelper;
+    @Autowired
+    private PasswordHelper passwordHelper;
     @Value("${mypark.production}")
     private boolean production;
     @Value("${mypark.sendmail}")
@@ -72,7 +74,7 @@ public class CommonService {
         if (id != null) {
             Optional<Token> optional = tokenService.findById(id);
 
-            return optional.isPresent() ? optional.get().getUser() : null;
+            return optional.map(Token::getUser).orElse(null);
         }
 
         return null;
@@ -84,7 +86,7 @@ public class CommonService {
 
         if (user != null) {
             String password = formDataHandler.extract(formData, 3);
-            String passwordEncoded = new BCryptPasswordEncoder().encode(password);
+            String passwordEncoded = this.passwordHelper.encode(password);
             user.setPassword(passwordEncoded);
 
             userService.save(user);
@@ -99,7 +101,7 @@ public class CommonService {
 
         if (userExists == null) {
             // hashing password
-            String password = new BCryptPasswordEncoder().encode(body.getPassword());
+            String password = this.passwordHelper.encode(body.getPassword());
             body.setPassword(password);
             // create body
             userService.save(body);

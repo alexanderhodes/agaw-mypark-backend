@@ -1,5 +1,7 @@
 package me.alexanderhodes.myparkbackend.web.rest;
 
+import me.alexanderhodes.myparkbackend.helper.FormDataHandler;
+import me.alexanderhodes.myparkbackend.helper.PasswordHelper;
 import me.alexanderhodes.myparkbackend.helper.UuidGenerator;
 import me.alexanderhodes.myparkbackend.model.Role;
 import me.alexanderhodes.myparkbackend.model.User;
@@ -30,6 +32,10 @@ public class UserResource {
     private AuthenticationService authenticationService;
     @Autowired
     private UserRoleService userRoleService;
+    @Autowired
+    private FormDataHandler formDataHandler;
+    @Autowired
+    private PasswordHelper passwordHelper;
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
@@ -164,6 +170,23 @@ public class UserResource {
         List<UserAdmin> users = this.userService.findByAdmin();
 
         return ResponseEntity.ok(users);
+    }
+
+    @PutMapping("/users/change-password")
+    public ResponseEntity<User> changePassword(@RequestBody String formData) {
+        User user = this.authenticationService.getCurrentUser();
+
+        String currentPassword = this.formDataHandler.extract(formData, 3);
+
+        if (this.passwordHelper.matches(currentPassword, user.getPassword())) {
+            String newPassword = this.formDataHandler.extract(formData, 7);
+            String newPasswordEncoded = this.passwordHelper.encode(newPassword);
+
+            user.setPassword(newPasswordEncoded);
+            this.userService.save(user);
+            return ResponseEntity.ok(user.toJson());
+        }
+        return ResponseEntity.badRequest().build();
     }
 
 
