@@ -7,6 +7,7 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import me.alexanderhodes.myparkbackend.mail.model.MMail;
 import org.springframework.stereotype.Component;
 
@@ -23,28 +24,43 @@ public class MailService {
     }
 
     public void send (MMail mmail) throws IOException {
-        this.send(SENDER, mmail.getReceiver(), mmail.getSubject(), mmail.getContent());
+        this.send(SENDER, mmail.getReceiver(), mmail.getCc(), mmail.getSubject(), mmail.getContent());
     }
 
-    public void send (String receiver, String subject, String text) throws IOException {
-        this.send(SENDER, receiver, subject, text);
+    public void send(String receiver, String cc, String subject, String text) throws IOException {
+        this.send(SENDER, receiver, cc, subject, text);
     }
 
-    private void send (String sender, String receiver, String subject, String text) throws IOException {
-        Mail mail = this.createConfiguration(sender, receiver, subject, text);
+    private void send(String sender, String receiver, String cc, String subject, String text) throws IOException {
+        Mail mail = this.createConfiguration(sender, receiver, cc, subject, text);
         SendGrid sendGrid = new SendGrid(this.apiKey);
         Request request = this.createRequest(mail);
+
         Response response = sendGrid.api(request);
 
         this.handleResponse(response);
     }
 
-    private Mail createConfiguration (String sender, String receiver, String subject, String text) {
+    private Mail createConfiguration(String sender, String receiver, String ccReceiver, String subject, String text) {
+        Mail mail = new Mail();
+        Personalization personalization = new Personalization();
+
         Email from = new Email(sender);
         Email to = new Email(receiver);
         Content content = new Content("text/html", text);
 
-        Mail mail = new Mail(from, subject, to, content);
+        if (ccReceiver != null && ccReceiver.length() > 0 && !receiver.equals(ccReceiver)) {
+            Email cc = new Email(ccReceiver);
+
+            personalization.addCc(cc);
+        }
+
+        personalization.setSubject(subject);
+        personalization.addTo(to);
+
+        mail.setFrom(from);
+        mail.addContent(content);
+        mail.addPersonalization(personalization);
 
         return mail;
     }

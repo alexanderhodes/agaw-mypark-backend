@@ -155,7 +155,7 @@ public class CommonService {
 
             String username = user.getFirstName() + " " + user.getLastName();
 
-            MMail mmail = mailHelper.createMail(user.getUsername(), username, key, placeholders);
+            MMail mmail = mailHelper.createMail(user.getUsername(), user.getPrivateEmail(), username, key, placeholders);
             if (sendMail) {
                 mailService.send(mmail);
             }

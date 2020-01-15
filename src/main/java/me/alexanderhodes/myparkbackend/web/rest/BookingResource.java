@@ -204,13 +204,14 @@ public class BookingResource {
 
     private void sendConfirmationMail(Booking booking) {
         String receiver = booking.getUser().getUsername();
+        String cc = booking.getUser().getPrivateEmail();
         String parkingSpace = booking.getParkingSpace().getNumber();
         String username = booking.getUser().getFirstName() + " " + booking.getUser().getLastName();
 
         List<AbstractMap.SimpleEntry<String, String>> placeholders = new ArrayList<>();
         placeholders.add(new AbstractMap.SimpleEntry<>("PLACEHOLDER_PARKINGSPACE", parkingSpace));
 
-        MMail mail = mailHelper.createMail(receiver, username, EmailTranslations.BOOKING_SUCCESS_TODAY,
+        MMail mail = mailHelper.createMail(receiver, cc, username, EmailTranslations.BOOKING_SUCCESS_TODAY,
                 placeholders);
 
         try {

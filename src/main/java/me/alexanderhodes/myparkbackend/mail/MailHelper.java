@@ -3,7 +3,6 @@ package me.alexanderhodes.myparkbackend.mail;
 import me.alexanderhodes.myparkbackend.helper.FileImport;
 import me.alexanderhodes.myparkbackend.helper.UrlHelper;
 import me.alexanderhodes.myparkbackend.mail.model.MMail;
-import me.alexanderhodes.myparkbackend.service.AuthenticationService;
 import me.alexanderhodes.myparkbackend.translations.EmailTranslations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -21,14 +20,12 @@ public class MailHelper {
     private EmailTranslations emailTranslations;
     @Autowired
     private UrlHelper urlHelper;
-    @Autowired
-    private AuthenticationService authenticationService;
 
     public MailHelper() {
 
     }
 
-    public MMail createMail(String receiver, String username, String key,
+    public MMail createMail(String receiver, String cc, String username, String key,
                             List<AbstractMap.SimpleEntry<String, String>> placeholders) {
         if (placeholders == null) {
             placeholders = new ArrayList<>();
@@ -36,7 +33,7 @@ public class MailHelper {
         String text = this.createText(key, placeholders, username);
         String subject = emailTranslations.getSubject(key);
 
-        MMail mail = new MMail(receiver, subject, text);
+        MMail mail = new MMail(receiver, cc, subject, text);
 
         return mail;
     }
