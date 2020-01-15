@@ -5,12 +5,14 @@ import me.alexanderhodes.myparkbackend.model.User;
 import me.alexanderhodes.myparkbackend.model.helper.UserAdmin;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface UserService extends CrudRepository<User, String> {
 
-    public User findByUsername(String username);
+    @Query("select u from User u where u.username = :username or u.name = :username")
+    public User findByUsernameOrName(@Param("username") String username);
 
     public List<User> findAllByEnabled (boolean enabled);
 

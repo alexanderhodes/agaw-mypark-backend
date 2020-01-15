@@ -1,6 +1,5 @@
 package me.alexanderhodes.myparkbackend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -30,12 +29,14 @@ public class User extends CommonEntity implements Serializable {
     private String lastName;
     @Column(name = "enabled")
     private boolean enabled;
+    @Column(name = "privateEmail")
+    private String privateEmail;
     @ManyToOne(optional = true)
     @JoinColumn(name = "f_parkingSpace")
     private ParkingSpace parkingSpace;
 
     public User(String id, String name, String password, String username, String firstName, String lastName,
-                boolean enabled, ParkingSpace parkingSpace) {
+                boolean enabled, ParkingSpace parkingSpace, String privateEmail) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -44,10 +45,11 @@ public class User extends CommonEntity implements Serializable {
         this.lastName = lastName;
         this.enabled = enabled;
         this.parkingSpace = parkingSpace;
+        this.privateEmail = privateEmail;
     }
 
     public User toJson() {
         return new User(this.id, this.name, null, this.username, this.firstName, this.lastName, this.enabled,
-                this.parkingSpace);
+                this.parkingSpace, this.privateEmail);
     }
 }

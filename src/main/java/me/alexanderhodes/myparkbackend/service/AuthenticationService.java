@@ -22,7 +22,7 @@ public class AuthenticationService {
     public User getCurrentUser () {
         String username = this.getCurrentUsername();
 
-        return (username != null && !username.isEmpty()) ? userService.findByUsername(username) : null;
+        return (username != null && !username.isEmpty()) ? userService.findByUsernameOrName(username) : null;
     }
 
 }

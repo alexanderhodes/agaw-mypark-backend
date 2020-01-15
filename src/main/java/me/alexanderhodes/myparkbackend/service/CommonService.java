@@ -19,7 +19,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class CommonService {
@@ -49,7 +52,7 @@ public class CommonService {
 
     public User requestPasswordReset (String email) {
         // 1. Prüfen, ob Benutzer existiert
-        User user = userService.findByUsername(email);
+        User user = userService.findByUsernameOrName(email);
 
         if (user != null) {
             // 2. Token generieren und in DB speichern
@@ -77,7 +80,7 @@ public class CommonService {
 
     public boolean storePassword (String base64Token, String formData) {
         String username = uuidGenerator.getUsernameFromBase64Token(base64Token);
-        User user = userService.findByUsername(username);
+        User user = userService.findByUsernameOrName(username);
 
         if (user != null) {
             String password = formDataHandler.extract(formData, 3);
@@ -92,7 +95,7 @@ public class CommonService {
     }
 
     public User createUser (User body) {
-        User userExists = userService.findByUsername(body.getUsername());
+        User userExists = userService.findByUsernameOrName(body.getUsername());
 
         if (userExists == null) {
             // hashing password
@@ -100,7 +103,7 @@ public class CommonService {
             body.setPassword(password);
             // create body
             userService.save(body);
-            User user = userService.findByUsername(body.getUsername());
+            User user = userService.findByUsernameOrName(body.getUsername());
             // create roles
             Optional<Role> role = roleService.findById("USER");
             UserRole userRole = new UserRole(user, role.get());
