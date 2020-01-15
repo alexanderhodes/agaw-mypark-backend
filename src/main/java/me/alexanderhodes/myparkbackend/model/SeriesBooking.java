@@ -36,6 +36,6 @@ public class SeriesBooking implements Serializable {
     }
 
     public User getUser() {
-        return user.toJson();
+        return user != null ? user.toJson() : null;
     }
 }
