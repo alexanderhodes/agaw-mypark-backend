@@ -173,6 +173,7 @@ public class UserResource {
     }
 
     @PutMapping("/users/change-password")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<User> changePassword(@RequestBody String formData) {
         User user = this.authenticationService.getCurrentUser();
 
