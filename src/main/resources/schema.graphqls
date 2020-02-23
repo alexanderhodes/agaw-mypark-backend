@@ -1,0 +1,28 @@
+type Query {
+    userById(id: ID): User,
+    allUsers: [User]
+}
+
+type User {
+    id: ID,
+    name: String,
+    password: String,
+    username: String,
+    firstName: String,
+    lastName: String,
+    enabled: Boolean,
+    secondaryEmail: String,
+    parkingSpace: ParkingSpace
+}
+
+type ParkingSpace {
+    id: String,
+    number: Int
+    parkingSpaceStatus: ParkingSpaceStatus
+}
+
+type ParkingSpaceStatus {
+    id: String,
+    name: String
+    color: String
+}

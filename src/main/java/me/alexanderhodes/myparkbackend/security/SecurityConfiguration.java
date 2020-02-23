@@ -29,7 +29,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.cors().and()
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/public",
+                .antMatchers(
+                        "/graphql",
+                        "/api/public",
                         "/api/common/password/request/*",
                         "/api/common/password/reset/*",
                         "/api/common/register/",

@@ -67,6 +67,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         byte[] signingKey = SecurityConstants.JWT_SECRET.getBytes();
 
         // drei Stunden
+        // ToDo: für SYS-Benutzer vielleicht verkürzen
         Date expiration = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 3);
 
         String token = Jwts.builder()

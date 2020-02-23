@@ -22,7 +22,17 @@ public class ParkingSpace extends CommonEntity implements Serializable {
     @JoinColumn(name = "f_parkingSpaceStatus")
     private ParkingSpaceStatus parkingSpaceStatus;
 
+    public ParkingSpace(String id) {
+        this.id = id;
+    }
+
     public ParkingSpace(String number, ParkingSpaceStatus parkingSpaceStatus) {
+        this.number = number;
+        this.parkingSpaceStatus = parkingSpaceStatus;
+    }
+
+    public ParkingSpace(String id, String number, ParkingSpaceStatus parkingSpaceStatus) {
+        this.id = id;
         this.number = number;
         this.parkingSpaceStatus = parkingSpaceStatus;
     }
