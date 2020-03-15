@@ -1,6 +1,21 @@
 type Query {
-    userById(id: ID): User,
-    allUsers: [User]
+    userById(id: ID!): User,
+    allUsers: [User],
+    findAllUsers: [User],
+    findParkingSpaceById(id: ID!): ParkingSpace,
+    allParkingSpaces: [ParkingSpace],
+    findBookings: [Booking],
+    findBookingsByUser(userId: ID!): [Booking],
+    findAbsencesByUser(userId: ID!): [Absence],
+    findSeriesBookingsByUser(userId: ID!): [SeriesBooking],
+    findSeriesAbsenceByUser(userId: ID!): [SeriesAbsence],
+    createUser(name: String, password: String, username: String, firstName: String, lastName: String,
+        privateEmail: String): User
+}
+
+type Mutation {
+    createUser(name: String, password: String, username: String, firstName: String, lastName: String,
+        privateEmail: String): User
 }
 
 type User {
@@ -11,18 +26,63 @@ type User {
     firstName: String,
     lastName: String,
     enabled: Boolean,
-    secondaryEmail: String,
-    parkingSpace: ParkingSpace
+    parkingSpace: ParkingSpace,
+    privateEmail: String
 }
 
 type ParkingSpace {
-    id: String,
+    id: ID,
     number: Int
     parkingSpaceStatus: ParkingSpaceStatus
 }
 
 type ParkingSpaceStatus {
-    id: String,
+    id: ID,
     name: String
     color: String
+}
+
+type Booking {
+    id: ID,
+    user: User,
+    parkingSpace: ParkingSpace,
+    date: String,
+    bookingStatus: BookingStatus
+}
+
+type BookingStatus {
+    id: ID,
+    name: String,
+    color: String
+}
+
+type SeriesBooking {
+    id: ID,
+    user: User,
+    active: Boolean,
+    time: String,
+    weekday: Int
+}
+
+type SeriesAbsence {
+    id: ID,
+    active: Boolean,
+    time: String,
+    weekday: Int
+}
+
+type UserRole {
+    user: User,
+    role: Role
+}
+
+type Role {
+    name: String
+}
+
+type Absence {
+    id: ID,
+    user: User,
+    start: String,
+    end: String
 }

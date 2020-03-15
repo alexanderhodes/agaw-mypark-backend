@@ -35,7 +35,15 @@ public class Booking extends CommonEntity implements Serializable {
         this.date = date;
     }
 
+    public Booking(String id, User user, ParkingSpace parkingSpace, LocalDateTime date, BookingStatus bookingStatus) {
+        this.id = id;
+        this.user = user;
+        this.parkingSpace = parkingSpace;
+        this.date = date;
+        this.bookingStatus = bookingStatus;
+    }
+
     public User getUser() {
-        return this.user == null ? this.user : this.user.toJson();
+        return this.user == null ? null : this.user.toJson();
     }
 }

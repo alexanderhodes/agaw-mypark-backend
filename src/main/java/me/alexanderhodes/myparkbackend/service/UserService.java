@@ -31,4 +31,6 @@ public interface UserService extends CrudRepository<User, String> {
             "group by u")
     public List<UserAdmin> findByAdmin();
 
+    public List<User> findAll();
+
 }

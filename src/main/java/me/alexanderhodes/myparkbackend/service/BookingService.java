@@ -18,6 +18,8 @@ public interface BookingService extends CrudRepository<Booking, String> {
 
     public List<Booking> findByDateAfterAndDateBefore(LocalDateTime after, LocalDateTime before);
 
+    public List<Booking> findAll();
+
     public void deleteById (String id);
 
     @Modifying

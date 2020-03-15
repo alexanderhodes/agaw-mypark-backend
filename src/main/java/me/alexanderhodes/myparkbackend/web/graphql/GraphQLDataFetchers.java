@@ -1,75 +1,118 @@
 package me.alexanderhodes.myparkbackend.web.graphql;
 
 import graphql.schema.DataFetcher;
-import me.alexanderhodes.myparkbackend.model.ParkingSpace;
-import me.alexanderhodes.myparkbackend.model.ParkingSpaceStatus;
-import me.alexanderhodes.myparkbackend.model.User;
+import me.alexanderhodes.myparkbackend.model.*;
+import me.alexanderhodes.myparkbackend.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component()
 public class GraphQLDataFetchers {
 
-    private static List<User> users = Arrays.asList(
-            new User("1", "alex", "password", "alexander.hodes@live.com", "Alexander",
-                    "Hodes", true, new ParkingSpace("1"), ""),
-            new User("2", "max", "password", "mail@example.com", "Max",
-                    "Mustermann", true, new ParkingSpace("1"), ""),
-            new User("3", "theo", "password", "mail@mail.com", "Theo",
-                    "Hodes", true, new ParkingSpace("1"), ""),
-            new User("4", "frank", "password", "mail1@mail.com", "Frank",
-                    "Wagner", true, new ParkingSpace("2"), "")
-    );
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private ParkingSpaceService parkingSpaceService;
+    @Autowired
+    private ParkingSpaceStatusService parkingSpaceStatusService;
+    @Autowired
+    private BookingService bookingService;
+    @Autowired
+    private AbsenceService absenceService;
+    @Autowired
+    private SeriesBookingService seriesBookingService;
+    @Autowired
+    private SeriesAbsenceService seriesAbsenceService;
 
-    private static List<ParkingSpace> parkingSpaces = Arrays.asList(
-            new ParkingSpace("1", "78", new ParkingSpaceStatus("1", "free", "green"))
-    );
-
-    private static List<ParkingSpaceStatus> parkingSpaceStatuses = Arrays.asList(
-            new ParkingSpaceStatus("1", "free", "green"),
-            new ParkingSpaceStatus("2", "used", "red")
-    );
-
-    public DataFetcher getUsersDataFetcher() {
-        return dataFetchingEnvironment -> {
-            return users;
-        };
+    public DataFetcher<List<User>> getUsersDataFetcher() {
+        return dataFetchingEnvironment -> this.userService.findAll();
     }
 
-    public DataFetcher getUserByIdDataFetcher() {
-        return dataFetchingEnvironment -> {
-            String userId = dataFetchingEnvironment.getArgument("id");
-            return users
-                    .stream()
-                    .filter(user -> user.getId().equals(userId))
-                    .findFirst()
-                    .orElse(null);
-        };
+    public DataFetcher<User> getUserByIdDataFetcher() {
+        return dataFetchingEnvironment -> dataFetchingEnvironment.getArgument("userId") != null ?
+                this.userService.findById(dataFetchingEnvironment.getArgument("id")).orElse(null) : null;
     }
 
-    public DataFetcher getParkingSpaceDataFetcher() {
+    public DataFetcher<ParkingSpace> getParkingSpaceDataFetcher() {
         return dataFetchingEnvironment -> {
             User user = dataFetchingEnvironment.getSource();
-            String parkingSpaceId = user.getParkingSpace().getId();
-            return parkingSpaces
-                    .stream()
-                    .filter(parkingSpace -> parkingSpace.getId().equals(parkingSpaceId))
-                    .findFirst()
-                    .orElse(null);
+            return user.getParkingSpace() != null ? this.parkingSpaceService.findById(user.getParkingSpace().getId()).orElse(null) : null;
         };
     }
 
-    public DataFetcher getParkingSpaceStatusDataFetcher() {
+    public DataFetcher<List<Booking>> getBookingsDataFetcher() {
+        return dataFetchingEnvironment -> this.bookingService.findAll();
+    }
+
+    public DataFetcher<List<ParkingSpace>> getParkingSpacesDataFetcher() {
+        return dataFetchingEnvironment -> this.parkingSpaceService.findAllByOrderByNumber();
+    }
+
+    public DataFetcher<ParkingSpaceStatus> getParkingSpaceStatusDataFetcher() {
         return dataFetchingEnvironment -> {
             ParkingSpace parkingSpace = dataFetchingEnvironment.getSource();
-            String parkingSpaceStatusId = parkingSpace.getParkingSpaceStatus().getId();
-            return parkingSpaceStatuses
-                    .stream()
-                    .filter(parkingSpaceStatus -> parkingSpaceStatus.getId().equals(parkingSpaceStatusId))
-                    .findFirst()
-                    .orElse(null);
+            return parkingSpace.getParkingSpaceStatus() != null ? this.parkingSpaceStatusService.findById(parkingSpace.getParkingSpaceStatus().getId()).orElse(null) : null;
+        };
+    }
+
+    public DataFetcher<List<Booking>> getBookingsByUserDataFetcher() {
+        return dataFetchingEnvironment -> {
+            if (dataFetchingEnvironment.getArgument("userId") == null) {
+                return new ArrayList<>();
+            }
+
+            Optional<User> user = this.userService.findById(dataFetchingEnvironment.getArgument("userId"));
+            return user.isPresent() ? this.bookingService.findByUserOrderByDateAsc(user.get()) : new ArrayList<>();
+        };
+    }
+
+    public DataFetcher<List<Absence>> getAbsencesByUserDataFetcher() {
+        return dataFetchingEnvironment -> {
+            if (dataFetchingEnvironment.getArgument("userId") == null) {
+                return new ArrayList<>();
+            }
+
+            Optional<User> user = this.userService.findById(dataFetchingEnvironment.getArgument("userId"));
+            return user.isPresent() ? this.absenceService.findByUser(user.get()) : new ArrayList<>();
+        };
+    }
+
+    public DataFetcher<List<SeriesBooking>> getSeriesBookingsByUserDataFetcher() {
+        return dataFetchingEnvironment -> {
+            if (dataFetchingEnvironment.getArgument("userId") == null) {
+                return new ArrayList<>();
+            }
+
+            Optional<User> user = this.userService.findById(dataFetchingEnvironment.getArgument("userId"));
+            return user.isPresent() ? this.seriesBookingService.findByUser(user.get()) : new ArrayList<>();
+        };
+    }
+
+    public DataFetcher<List<SeriesAbsence>> getSeriesAbsencesByUserDataFetcher() {
+        return dataFetchingEnvironment -> {
+            if (dataFetchingEnvironment.getArgument("userId") == null) {
+                return new ArrayList<>();
+            }
+
+            Optional<User> user = this.userService.findById(dataFetchingEnvironment.getArgument("userId"));
+            return user.isPresent() ? this.seriesAbsenceService.findByUser(user.get()) : new ArrayList<>();
+        };
+    }
+
+    public DataFetcher<User> createUserDataFetcher() {
+        return dataFetchingEnvironment -> {
+            String name = dataFetchingEnvironment.getArgument("name");
+            String password = dataFetchingEnvironment.getArgument("password");
+            String username = dataFetchingEnvironment.getArgument("username");
+            String firstName = dataFetchingEnvironment.getArgument("firstName");
+            String lastName = dataFetchingEnvironment.getArgument("lastName");
+            String privateEmail = dataFetchingEnvironment.getArgument("privateEmail");
+
+            return new User(null, name, password, username, firstName, lastName, false, null, privateEmail);
         };
     }
 
